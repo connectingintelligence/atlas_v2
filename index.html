@@ -1,0 +1,377 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Atlas v2 — Conditions for Collective Trauma</title>
+
+<!-- Libraries + fonts vendored locally in vendor/ — no internet/CDN required. -->
+<link href="vendor/fonts.css" rel="stylesheet">
+
+<script src="vendor/d3.min.js"></script>
+<script src="vendor/topojson.min.js"></script>
+<script src="vendor/marked.min.js"></script>
+
+<style>
+  /* ─── THEMES (bone primary; forest + dusk alternates) ──────── */
+  /* Agent G owns this block: /* THEME */
+  /* Shared motion tokens — JS (motion.js) mirrors these as MOTION.* */
+  :root {
+    --m-fast:.18s; --m-base:.28s; --m-slow:.45s; --m-intro:.9s;
+    --ease-out:cubic-bezier(.22,.8,.25,1);     /* decel — entrances */
+    --ease-in-out:cubic-bezier(.65,0,.35,1);   /* symmetric — morphs */
+    --ease-soft:cubic-bezier(.4,0,.2,1);        /* gentle UI */
+  }
+  :root, [data-theme="bone"] {
+    --bg:#f1ebe1; --bg-2:#e8dfd0; --ink:#1a1612; --ink-dim:#555049; --ink-faint:#8a8278;
+    --rule:#cfc4b2; --accent:#b0522a; --accent-ink:#f1ebe1;
+    --country-absent:#d8cfbf; --country-stroke:#e7ddcc; --ocean:#eadfcd;
+    --globe-atmos-inner:rgba(176,82,42,0.055); --globe-atmos-outer:rgba(176,82,42,0);
+    --panel-bg:rgba(241,235,225,0.86); --panel-border:rgba(26,22,18,0.10);
+    --chip-bg:rgba(26,22,18,0.035); --arc-perp:#9a3818; --arc-victim:#b06a2a;
+    --shadow:rgba(40,30,18,0.16);
+  }
+  [data-theme="forest"] {
+    --bg:#0c1714; --bg-2:#13201c; --ink:#ece6d8; --ink-dim:#a9b3ab; --ink-faint:#69776f;
+    --rule:#243831; --accent:#e0a062; --accent-ink:#0c1714;
+    --country-absent:#1a2924; --country-stroke:#0a1310; --ocean:#0b1815;
+    --globe-atmos-inner:rgba(224,160,98,0.07); --globe-atmos-outer:rgba(224,160,98,0);
+    --panel-bg:rgba(13,25,21,0.84); --panel-border:rgba(236,230,216,0.10);
+    --chip-bg:rgba(236,230,216,0.04); --arc-perp:#d05a36; --arc-victim:#f0cd84;
+    --shadow:rgba(0,0,0,0.5);
+  }
+  [data-theme="dusk"] {
+    --bg:#17110e; --bg-2:#1f1813; --ink:#efe1d0; --ink-dim:#ab9c8d; --ink-faint:#6e6155;
+    --rule:#302720; --accent:#cf6336; --accent-ink:#17110e;
+    --country-absent:#231a15; --country-stroke:#140f0c; --ocean:#15100c;
+    --globe-atmos-inner:rgba(207,99,54,0.07); --globe-atmos-outer:rgba(207,99,54,0);
+    --panel-bg:rgba(24,18,15,0.86); --panel-border:rgba(239,225,208,0.09);
+    --chip-bg:rgba(239,225,208,0.045); --arc-perp:#cf6336; --arc-victim:#e7b56e;
+    --shadow:rgba(0,0,0,0.55);
+  }
+
+  * { box-sizing:border-box; margin:0; padding:0; }
+  html, body { height:100%; overflow:hidden; }
+  body {
+    font-family:'Inter',system-ui,sans-serif; background:var(--bg); color:var(--ink);
+    font-size:14px; line-height:1.55; letter-spacing:.005em;
+    -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale;
+    text-rendering:optimizeLegibility; font-feature-settings:'kern' 1, 'liga' 1;
+    transition:background var(--m-intro) var(--ease-soft), color var(--m-slow) ease;
+  }
+  .mono { font-family:'JetBrains Mono',ui-monospace,monospace; font-feature-settings:'tnum' 1; }
+  .serif { font-family:'Source Serif 4',Georgia,serif; font-optical-sizing:auto; }
+
+  /* ─── STAGE / GLOBE ────────────────────────────────────────── */
+  #stage { position:fixed; inset:0; }
+  #globe-wrap { position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+    /* own stacking context: keeps the map's internal layers (ocean, countries,
+       arcs, the z-index:6 particle canvas) contained BELOW the UI chrome. Without
+       this, once .globe-in clears opacity/transform the canvas's z:6 escapes to
+       #stage level and paints over the layer panel (particles bled across it). */
+    isolation:isolate;
+    opacity:0; transform:scale(.985); transition:opacity 1.1s var(--ease-out), transform 1.1s var(--ease-out);
+    /* CSS safety net: if motion.js never fires, the globe still appears */
+    animation:globeSafety .1s linear 2s forwards; }
+  /* motion.js adds .globe-in once the SVG mounts → graceful first paint */
+  #globe-wrap.globe-in { opacity:1; transform:none; animation:none; }
+  @keyframes globeSafety { to { opacity:1; transform:none; } }
+  #globe-wrap svg { display:block; }
+  #globe-wrap .country { stroke:var(--country-stroke); stroke-width:.35; cursor:pointer;
+    transition:opacity var(--m-base) var(--ease-soft), stroke-width var(--m-fast) var(--ease-soft), fill var(--m-base) ease; }
+  #globe-wrap .country:hover { stroke:var(--accent); stroke-width:1.1; }
+  #globe-wrap .country[data-dimmed="true"] { opacity:.28; }
+  /* surface-layer fade-in: layers toggle .layer-fade-enter on #globe-wrap */
+  #globe-wrap.layer-fade-enter .countries { animation:layerFade var(--m-slow) var(--ease-out); }
+  @keyframes layerFade { from { opacity:0; } to { opacity:1; } }
+  #globe-wrap .ocean { fill:var(--ocean); stroke:var(--rule); stroke-width:.5; }
+  #globe-wrap .graticule { fill:none; stroke:color-mix(in srgb, var(--ink) 6%, transparent); stroke-width:.5; }
+  #globe-wrap .sphere-shade, #globe-wrap .atmos, #globe-wrap .overlay { pointer-events:none; }
+  #globe-wrap .arc { mix-blend-mode:multiply; }
+  [data-theme="forest"] #globe-wrap .arc, [data-theme="dusk"] #globe-wrap .arc { mix-blend-mode:screen; }
+
+  /* ─── INTRO ────────────────────────────────────────────────── */
+  /* Agent G owns transitions: /* MOTION */
+  #intro { position:fixed; inset:0; z-index:40; pointer-events:none; }
+  #intro.hidden { display:none; }
+  #intro { transition:opacity .7s var(--ease-soft); }
+  #intro.leaving { opacity:0; }
+  #intro::before {
+    content:""; position:absolute; inset:0; transition:opacity .8s var(--ease-soft);
+    background:radial-gradient(ellipse at center,
+      color-mix(in srgb, var(--bg) 32%, transparent) 0%,
+      color-mix(in srgb, var(--bg) 82%, transparent) 50%, var(--bg) 95%);
+  }
+  #intro.fading::before { opacity:.35; }
+  .intro-stage { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; padding:40px 48px; }
+  .intro-screen { position:absolute; max-width:640px; opacity:0; transform:translateY(14px);
+    transition:opacity .8s var(--ease-out), transform .8s var(--ease-out); pointer-events:none; will-change:opacity,transform; }
+  .intro-screen.active { opacity:1; transform:translateY(0); pointer-events:auto; }
+  /* staggered reveal of children on the active screen */
+  .intro-screen.active > * { opacity:0; transform:translateY(8px); animation:introRise .7s var(--ease-out) forwards; }
+  .intro-screen.active > *:nth-child(1) { animation-delay:.05s; }
+  .intro-screen.active > *:nth-child(2) { animation-delay:.13s; }
+  .intro-screen.active > *:nth-child(3) { animation-delay:.21s; }
+  .intro-screen.active > *:nth-child(4) { animation-delay:.29s; }
+  .intro-screen.active > *:nth-child(5) { animation-delay:.37s; }
+  .intro-screen.active > *:nth-child(6) { animation-delay:.45s; }
+  @keyframes introRise { to { opacity:1; transform:none; } }
+  .intro-eyebrow { font-family:'JetBrains Mono',monospace; font-size:11px; letter-spacing:.22em;
+    text-transform:uppercase; color:var(--accent); margin-bottom:22px; display:flex; align-items:center; gap:10px;
+    text-shadow:0 0 12px var(--bg); }
+  .intro-eyebrow::before { content:""; width:28px; height:1px; background:var(--accent); }
+  .intro-h1 { font-family:'Source Serif 4',Georgia,serif; font-weight:300; font-size:52px; line-height:1.08;
+    letter-spacing:-.015em; color:var(--ink); margin-bottom:20px;
+    text-shadow:0 0 22px var(--bg), 0 0 8px var(--bg); }
+  .intro-h1 em { font-style:italic; font-weight:300; color:var(--accent); }
+  .intro-sub { font-family:'Source Serif 4',Georgia,serif; font-size:19px; line-height:1.55; color:var(--ink-dim);
+    max-width:560px; margin-bottom:30px; font-weight:300;
+    text-shadow:0 0 18px var(--bg), 0 0 6px var(--bg); }
+  .intro-body { font-size:16px; line-height:1.75; color:var(--ink-dim); max-width:540px; margin-bottom:30px;
+    text-shadow:0 0 18px var(--bg), 0 0 6px var(--bg); }
+  .intro-body p + p { margin-top:14px; }
+  .intro-body strong { color:var(--ink); font-weight:500; }
+  .intro-rule { width:40px; height:1px; background:var(--rule); margin:30px 0; }
+  .intro-cta { display:inline-flex; align-items:center; gap:10px; background:transparent; border:1px solid var(--ink);
+    color:var(--ink); font-family:inherit; font-size:14px; padding:13px 22px; border-radius:2px; cursor:pointer;
+    letter-spacing:.02em; transition:background var(--m-base) var(--ease-soft),color var(--m-base) var(--ease-soft),border-color var(--m-base) var(--ease-soft),transform var(--m-fast) var(--ease-out); }
+  .intro-cta span { transition:transform var(--m-base) var(--ease-out); }
+  .intro-cta:hover { background:var(--ink); color:var(--bg); }
+  .intro-cta:hover span { transform:translateX(4px); }
+  .intro-cta:active { transform:translateY(1px); }
+  .intro-cta.primary { background:var(--accent); color:var(--accent-ink); border-color:var(--accent); }
+  .intro-cta.primary:hover { filter:brightness(1.08); }
+  .intro-ghost { display:inline-block; margin-left:18px; color:var(--ink-faint); font-size:13px; text-decoration:none;
+    cursor:pointer; border-bottom:1px solid transparent; transition:color .25s,border-color .25s; }
+  .intro-ghost:hover { color:var(--ink-dim); border-bottom-color:var(--ink-faint); }
+  .intro-stats { display:grid; grid-template-columns:repeat(3,auto); gap:40px; margin-top:36px; }
+  .intro-stats .stat-v { font-family:'Source Serif 4',serif; font-size:32px; color:var(--ink); line-height:1;
+    text-shadow:0 0 18px var(--bg), 0 0 7px var(--bg); }
+  .intro-stats .stat-l { font-family:'JetBrains Mono',monospace; font-size:11px; letter-spacing:.14em;
+    text-transform:uppercase; color:var(--ink-dim); margin-top:8px;
+    text-shadow:0 0 14px var(--bg), 0 0 6px var(--bg); }
+  .intro-progress { position:absolute; bottom:32px; left:50%; transform:translateX(-50%); display:flex; gap:10px; z-index:50; }
+  .intro-progress .dot { width:18px; height:1px; background:var(--rule); cursor:pointer; transition:background .35s,height .35s; }
+  .intro-progress .dot.active { background:var(--accent); height:2px; }
+
+  /* ─── CHROME ───────────────────────────────────────────────── */
+  #chrome { position:fixed; inset:0; pointer-events:none; opacity:0; transition:opacity .9s ease .2s; }
+  #chrome.visible { opacity:1; }
+  /* These chrome controls mount to <body>, not #chrome, so the intro's reveal
+     gating misses them. Hide them while the intro is up; they fade in on enter. */
+  body.intro-active #csearch,
+  body.intro-active #fb-pill,
+  body.intro-active #atlas-legend,
+  body.intro-active #surface-legend,
+  body.intro-active #wt-toggle {
+    opacity:0 !important; pointer-events:none !important; transition:opacity .5s var(--ease-out); }
+  /* Calm the backdrop during the intro: the globe sits quiet behind the text,
+     then fades to full presence on enter. (Selector beats #globe-wrap.globe-in.) */
+  body.intro-active #globe-wrap { opacity:.28; }
+  #chrome > * { pointer-events:auto; }
+  #topbar { position:absolute; top:22px; left:28px; }
+  #topbar .brand-title { font-family:'Source Serif 4',serif; font-size:17px; color:var(--ink); line-height:1.2; }
+  #topbar .brand-sub { font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:.14em;
+    text-transform:uppercase; color:var(--ink-faint); margin-top:4px; }
+  #statrail { position:absolute; top:24px; right:28px; display:flex; gap:28px; text-align:right; }
+  #statrail .v { font-family:'Source Serif 4',serif; font-size:22px; color:var(--ink); line-height:1; }
+  #statrail .l { font-family:'JetBrains Mono',monospace; font-size:9.5px; letter-spacing:.16em;
+    text-transform:uppercase; color:var(--ink-faint); margin-top:6px; }
+
+  /* layer panel */
+  #layers { position:absolute; left:28px; top:50%; transform:translateY(-50%); width:286px; max-height:74vh;
+    overflow-y:auto; background:var(--panel-bg); border:1px solid var(--panel-border);
+    backdrop-filter:blur(14px) saturate(1.1); border-radius:4px; padding:18px; }
+  #layers h3 { font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:.16em; text-transform:uppercase;
+    color:var(--ink-faint); margin-bottom:10px; }
+  #layers h3:not(:first-child) { margin-top:20px; }
+  .layer-group { display:flex; flex-direction:column; gap:2px; }
+  .layer-row { border-left:2px solid transparent; padding:6px 8px; border-radius:2px; }
+  .layer-row.on { border-left-color:var(--accent); background:var(--chip-bg); }
+  .layer-head { display:flex; align-items:center; justify-content:space-between; gap:8px; }
+  .layer-toggle { display:flex; align-items:center; gap:9px; cursor:pointer; font-size:13px; color:var(--ink-dim); }
+  .layer-row.on .layer-name { color:var(--ink); }
+  .layer-toggle input { accent-color:var(--accent); }
+  .layer-info { width:18px; height:18px; border-radius:50%; border:1px solid var(--rule); background:transparent;
+    color:var(--ink-faint); font-family:'Source Serif 4',serif; font-style:italic; font-size:11px; cursor:pointer; }
+  .layer-info:hover { color:var(--ink); border-color:var(--ink-faint); }
+  .layer-controls { margin:8px 0 4px; display:flex; flex-direction:column; gap:9px; }
+  .ctrl { display:flex; flex-direction:column; gap:5px; font-size:11.5px; color:var(--ink-dim); }
+  .ctrl span { display:flex; justify-content:space-between; }
+  .ctrl .cval { font-family:'JetBrains Mono',monospace; color:var(--ink); font-style:normal; }
+  .ctrl select, .ctrl input[type="range"] { width:100%; accent-color:var(--accent); font-family:inherit;
+    background:var(--bg-2); color:var(--ink); border:1px solid var(--rule); border-radius:2px; padding:4px 6px; font-size:12px; }
+  .ctrl-toggle span { justify-content:flex-start; gap:8px; }
+
+  /* tooltip */
+  #tooltip { position:fixed; z-index:80; display:none; pointer-events:none; background:var(--panel-bg);
+    border:1px solid var(--panel-border); backdrop-filter:blur(12px); border-radius:3px; padding:10px 13px;
+    min-width:150px; box-shadow:0 6px 22px rgba(0,0,0,.25); }
+  #tooltip .tt-name { font-family:'Source Serif 4',serif; font-weight:500; font-size:15px; color:var(--ink); }
+  #tooltip .tt-val { font-family:'Source Serif 4',serif; font-size:22px; color:var(--accent); margin-top:2px; line-height:1; }
+  #tooltip .tt-hint { font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:.1em; color:var(--ink-faint); margin-top:6px; }
+
+  /* methodology side panel */
+  #methodology { position:fixed; top:0; right:0; bottom:0; width:380px; background:var(--bg); border-left:1px solid var(--rule);
+    padding:30px 28px; overflow-y:auto; transform:translateX(100%); transition:transform .45s cubic-bezier(.22,.8,.25,1); z-index:75; }
+  #methodology.open { transform:translateX(0); }
+  #methodology .mclose { position:absolute; top:20px; right:22px; background:transparent; border:none; color:var(--ink-faint); font-size:18px; cursor:pointer; }
+  #methodology .mclose:hover { color:var(--ink); }
+  #methodology .mkind { font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:.16em; text-transform:uppercase; color:var(--accent); margin-bottom:14px; }
+  #methodology .mbody { font-size:14px; line-height:1.7; color:var(--ink-dim); }
+  #methodology .mbody h1 { font-family:'Source Serif 4',serif; font-weight:400; font-size:26px; color:var(--ink); margin-bottom:10px; line-height:1.15; }
+  #methodology .mbody h2 { font-family:'Source Serif 4',serif; font-weight:500; font-size:16px; color:var(--ink); margin:20px 0 8px; }
+  #methodology .mbody p { margin-bottom:12px; }
+  #methodology .mbody a { color:var(--accent); }
+  #methodology .mbody code { font-family:'JetBrains Mono',monospace; font-size:12px; background:var(--chip-bg); padding:1px 5px; border-radius:2px; }
+  #methodology .merr { color:var(--arc-perp); font-style:italic; }
+
+  /* globe controls */
+  #globe-controls { position:absolute; right:28px; bottom:24px; display:flex; align-items:center;
+    background:var(--panel-bg); border:1px solid var(--panel-border); backdrop-filter:blur(14px) saturate(1.1);
+    border-radius:999px; padding:4px; box-shadow:0 4px 18px var(--shadow); }
+  #globe-controls .gc-btn { appearance:none; background:transparent; border:none; height:30px; min-width:30px; border-radius:999px;
+    color:var(--ink-dim); cursor:pointer; display:inline-flex; align-items:center; justify-content:center; padding:0 8px;
+    font-family:'JetBrains Mono',monospace; font-size:11px;
+    transition:background var(--m-fast) var(--ease-soft),color var(--m-fast) var(--ease-soft),transform var(--m-fast) var(--ease-out); }
+  #globe-controls .gc-btn:hover { background:var(--rule); color:var(--ink); }
+  #globe-controls .gc-btn:active { transform:scale(.92); }
+  #globe-controls .gc-btn.active { background:var(--accent); color:var(--accent-ink); }
+  #globe-controls .gc-divider { width:1px; height:16px; background:var(--rule); margin:0 4px; }
+
+  /* ─── THEME SWITCHER (injected by motion.js; styled here for palette) ── */
+  #theme-switcher { position:absolute; bottom:24px; left:28px; display:flex; align-items:center; gap:7px;
+    background:var(--panel-bg); border:1px solid var(--panel-border); backdrop-filter:blur(14px) saturate(1.1);
+    border-radius:999px; padding:5px 7px; box-shadow:0 4px 18px var(--shadow); pointer-events:auto; }
+  #theme-switcher .ts-dot { width:16px; height:16px; border-radius:50%; border:1px solid var(--panel-border);
+    cursor:pointer; padding:0; position:relative;
+    transition:transform var(--m-fast) var(--ease-out),box-shadow var(--m-base) var(--ease-soft); }
+  #theme-switcher .ts-dot:hover { transform:scale(1.15); }
+  #theme-switcher .ts-dot[aria-pressed="true"] { box-shadow:0 0 0 2px var(--bg),0 0 0 3.5px var(--accent); }
+  #theme-switcher .ts-dot[data-theme-name="bone"]   { background:#e7ddcc; }
+  #theme-switcher .ts-dot[data-theme-name="forest"] { background:#13201c; }
+  #theme-switcher .ts-dot[data-theme-name="dusk"]   { background:#1f1813; }
+
+  #bottom-hint { position:absolute; bottom:24px; left:50%; transform:translateX(-50%); font-family:'JetBrains Mono',monospace;
+    font-size:10.5px; letter-spacing:.14em; text-transform:uppercase; color:var(--ink-faint); display:flex; gap:18px; align-items:center; }
+  #bottom-hint .k { padding:2px 7px; border:1px solid var(--rule); border-radius:2px; color:var(--ink-dim); }
+
+  /* chrome reveal: gentle settle for the rails once intro clears */
+  #chrome.visible #topbar, #chrome.visible #statrail { animation:settleIn .8s var(--ease-out) both; }
+  #chrome.visible #statrail { animation-delay:.08s; }
+  @keyframes settleIn { from { opacity:0; transform:translateY(-6px); } to { opacity:1; transform:none; } }
+
+  /* ─── REDUCED MOTION ───────────────────────────────────────── */
+  /* Disable non-essential animation; keep opacity cross-fades (essential
+     for legibility of intro→app handoff) but make them near-instant. */
+  @media (prefers-reduced-motion:reduce) {
+    *, *::before, *::after {
+      animation-duration:.001ms !important; animation-iteration-count:1 !important;
+      transition-duration:.001ms !important; scroll-behavior:auto !important;
+    }
+    #globe-wrap { transform:none !important; }
+    .intro-screen, .intro-screen.active > * { transform:none !important; }
+    .intro-cta:hover span { transform:none !important; }
+  }
+
+  @media (max-width:900px) {
+    #layers, #statrail { display:none; }
+    .intro-h1 { font-size:38px; }
+    #methodology { width:92vw; }
+    #theme-switcher { bottom:auto; top:20px; right:28px; left:auto; }
+  }
+</style>
+</head>
+<body data-theme="bone">
+
+<div id="stage">
+  <div id="globe-wrap"></div>
+
+  <!-- INTRO -->
+  <div id="intro">
+    <div class="intro-stage">
+      <section class="intro-screen" data-screen="0">
+        <div class="intro-eyebrow">Atlas · v2 · 2026</div>
+        <h1 class="intro-h1">Conditions for<br><em>Collective Trauma</em>.</h1>
+        <p class="intro-sub">This map visualises the conditions under which collective trauma may emerge,
+          persist, and transmit. It does not measure trauma itself — trauma is a lived, embodied, relational
+          reality that exceeds any data model.</p>
+        <div class="intro-rule"></div>
+        <button class="intro-cta primary" data-next>Begin <span>→</span></button>
+        <a class="intro-ghost" data-skip>Skip the intro</a>
+      </section>
+      <section class="intro-screen" data-screen="1">
+        <div class="intro-eyebrow">How to read this</div>
+        <h1 class="intro-h1" style="font-size:38px;">A composite of conditions,<br>dampened by resilience.</h1>
+        <div class="intro-body">
+          <p>A high <strong>Conditions Density</strong> does not mean a country “is traumatised.” It means the
+            structural, historical, and relational conditions that can give rise to collective trauma are
+            densely present there.</p>
+          <p>The <strong>Resilience Factors</strong> indicate where the collective capacity for mitigation,
+            awareness, and integration may exist — where a society may have resources to process its history.</p>
+          <p>Switch the surface or draw the <strong>entanglements</strong> — refugees, economy, commodities,
+            colonies, slave voyages, genocide — from the panel on the left. Hover for a figure, click to pin a
+            country, and swap between 2D and 3D below.</p>
+        </div>
+        <div class="intro-stats">
+          <div><div class="stat-v">308</div><div class="stat-l">Territories</div></div>
+          <div><div class="stat-v">28</div><div class="stat-l">Condition clusters</div></div>
+          <div><div class="stat-v">14</div><div class="stat-l">Resilience factors</div></div>
+        </div>
+        <div class="intro-rule"></div>
+        <button class="intro-cta" data-next>Continue <span>→</span></button>
+      </section>
+      <section class="intro-screen" data-screen="2">
+        <div class="intro-eyebrow">Before you enter</div>
+        <h1 class="intro-h1" style="font-size:38px;">A quiet note.</h1>
+        <div class="intro-body">
+          <p>At this stage, the map uses national state borders as a visual layer. But the realities of
+            collective trauma often exceed those borders: statelessness, migration, displacement, regions,
+            Indigenous territories, and tribal or cultural continuities frequently extend across and beyond
+            nation-states. These layers are essential, but they cannot yet be fully visualised here.</p>
+          <p>The map is a starting point for inquiry, never a ranking.</p>
+        </div>
+        <div class="intro-rule"></div>
+        <button class="intro-cta primary" data-enter>Enter the atlas <span>→</span></button>
+      </section>
+    </div>
+    <div class="intro-progress">
+      <div class="dot active" data-dot="0"></div><div class="dot" data-dot="1"></div><div class="dot" data-dot="2"></div>
+    </div>
+  </div>
+
+  <!-- CHROME -->
+  <div id="chrome">
+    <header id="topbar">
+      <div class="brand-title">Conditions for Collective Trauma</div>
+      <!-- build stamp: bump when shipping UI fixes so a stale tab is instantly
+           recognisable (user-reported bugs kept tracing back to old tabs) -->
+      <div class="brand-sub">Atlas · v2 · 2026 · build 06-22.a</div>
+    </header>
+    <div id="statrail">
+      <div class="s"><div class="v" id="sr-cov">—</div><div class="l">Coverage</div></div>
+      <div class="s"><div class="v" id="sr-mean">—</div><div class="l">Global mean</div></div>
+      <div class="s"><div class="v" id="sr-peak">—</div><div class="l">Highest</div></div>
+    </div>
+    <aside id="layers"></aside>
+    <div id="bottom-hint">
+      <span><span class="k">drag</span> rotate</span>
+      <span><span class="k">scroll</span> zoom</span>
+      <span><span class="k">click</span> a country</span>
+    </div>
+    <div id="globe-controls" aria-label="Globe controls">
+      <button class="gc-btn active" id="gc-proj" title="Toggle 2D / 3D">3D</button>
+      <div class="gc-divider"></div>
+      <button class="gc-btn" id="gc-play" title="Play / pause rotation">❚❚</button>
+      <div class="gc-divider"></div>
+      <button class="gc-btn" id="gc-zout" title="Zoom out">−</button>
+      <button class="gc-btn" id="gc-zin" title="Zoom in">+</button>
+    </div>
+  </div>
+
+  <div id="tooltip"></div>
+</div>
+
+<script type="module" src="js/app.js"></script>
+</body>
+</html>
