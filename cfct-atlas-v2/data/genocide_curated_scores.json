@@ -1,0 +1,799 @@
+{
+  "ARM": {
+    "victim_score": 77.9,
+    "perpetrator_score": 0.0,
+    "combined_score": 77.9,
+    "victim_deaths_total": 1000000,
+    "perpetrator_deaths_total": 0,
+    "events": [
+      {
+        "name": "Armenian Genocide",
+        "years": "1915-1923",
+        "deaths": 1000000,
+        "role": "victim",
+        "confidence": "high"
+      }
+    ]
+  },
+  "AUT": {
+    "victim_score": 62.6,
+    "perpetrator_score": 0.0,
+    "combined_score": 62.6,
+    "victim_deaths_total": 65459,
+    "perpetrator_deaths_total": 0,
+    "events": [
+      {
+        "name": "Holocaust (Jewish victims)",
+        "years": "1941-1945",
+        "deaths": 65459,
+        "role": "victim",
+        "confidence": "high"
+      }
+    ]
+  },
+  "BEL": {
+    "victim_score": 57.0,
+    "perpetrator_score": 79.0,
+    "combined_score": 79.0,
+    "victim_deaths_total": 24387,
+    "perpetrator_deaths_total": 1200000,
+    "events": [
+      {
+        "name": "Congo Free State",
+        "years": "1885-1908",
+        "deaths": 1200000,
+        "role": "perpetrator",
+        "confidence": "high"
+      },
+      {
+        "name": "Holocaust (Jewish victims)",
+        "years": "1941-1945",
+        "deaths": 24387,
+        "role": "victim",
+        "confidence": "high"
+      }
+    ]
+  },
+  "BGD": {
+    "victim_score": 74.0,
+    "perpetrator_score": 0.0,
+    "combined_score": 74.0,
+    "victim_deaths_total": 500000,
+    "perpetrator_deaths_total": 0,
+    "events": [
+      {
+        "name": "Bangladesh Genocide",
+        "years": "1971",
+        "deaths": 500000,
+        "role": "victim",
+        "confidence": "medium"
+      }
+    ]
+  },
+  "BIH": {
+    "victim_score": 50.3,
+    "perpetrator_score": 0.0,
+    "combined_score": 50.3,
+    "victim_deaths_total": 7500,
+    "perpetrator_deaths_total": 0,
+    "events": [
+      {
+        "name": "Srebrenica Genocide",
+        "years": "1995",
+        "deaths": 7500,
+        "role": "victim",
+        "confidence": "high"
+      }
+    ]
+  },
+  "BLR": {
+    "victim_score": 75.9,
+    "perpetrator_score": 0.0,
+    "combined_score": 75.9,
+    "victim_deaths_total": 700000,
+    "perpetrator_deaths_total": 0,
+    "events": [
+      {
+        "name": "Holocaust (Jewish victims)",
+        "years": "1941-1945",
+        "deaths": 700000,
+        "role": "victim",
+        "confidence": "high"
+      }
+    ]
+  },
+  "CHN": {
+    "victim_score": 98.2,
+    "perpetrator_score": 98.1,
+    "combined_score": 98.2,
+    "victim_deaths_total": 36155300,
+    "perpetrator_deaths_total": 36000000,
+    "events": [
+      {
+        "name": "Great Leap Forward Famine",
+        "years": "1958-1962",
+        "deaths": 36000000,
+        "role": "victim",
+        "confidence": "high"
+      },
+      {
+        "name": "Great Leap Forward Famine",
+        "years": "1958-1962",
+        "deaths": 36000000,
+        "role": "perpetrator",
+        "confidence": "high"
+      },
+      {
+        "name": "Nanjing Massacre",
+        "years": "1937-1938",
+        "deaths": 155300,
+        "role": "victim",
+        "confidence": "medium"
+      }
+    ]
+  },
+  "COD": {
+    "victim_score": 79.0,
+    "perpetrator_score": 0.0,
+    "combined_score": 79.0,
+    "victim_deaths_total": 1200000,
+    "perpetrator_deaths_total": 0,
+    "events": [
+      {
+        "name": "Congo Free State",
+        "years": "1885-1908",
+        "deaths": 1200000,
+        "role": "victim",
+        "confidence": "high"
+      }
+    ]
+  },
+  "CZE": {
+    "victim_score": 70.3,
+    "perpetrator_score": 0.0,
+    "combined_score": 70.3,
+    "victim_deaths_total": 260000,
+    "perpetrator_deaths_total": 0,
+    "events": [
+      {
+        "name": "Holocaust (Jewish victims)",
+        "years": "1941-1945",
+        "deaths": 260000,
+        "role": "victim",
+        "confidence": "high"
+      }
+    ]
+  },
+  "DEU": {
+    "victim_score": 74.2,
+    "perpetrator_score": 88.8,
+    "combined_score": 88.8,
+    "victim_deaths_total": 515000,
+    "perpetrator_deaths_total": 6904103,
+    "events": [
+      {
+        "name": "Holocaust (Jewish victims)",
+        "years": "1941-1945",
+        "deaths": 3000000,
+        "role": "perpetrator",
+        "confidence": "high"
+      },
+      {
+        "name": "Holocaust (Roma victims)",
+        "years": "1941-1945",
+        "deaths": 350000,
+        "role": "victim",
+        "confidence": "medium"
+      },
+      {
+        "name": "Holocaust (Roma victims)",
+        "years": "1941-1945",
+        "deaths": 350000,
+        "role": "perpetrator",
+        "confidence": "medium"
+      },
+      {
+        "name": "Holocaust (Jewish victims)",
+        "years": "1941-1945",
+        "deaths": 165000,
+        "role": "victim",
+        "confidence": "high"
+      },
+      {
+        "name": "Herero and Nama Genocide",
+        "years": "1904-1908",
+        "deaths": 75000,
+        "role": "perpetrator",
+        "confidence": "high"
+      },
+      {
+        "name": "Holocaust (survivors to Israel)",
+        "years": "1941-1945",
+        "deaths": 0,
+        "role": "perpetrator",
+        "confidence": "high"
+      }
+    ]
+  },
+  "EST": {
+    "victim_score": 38.8,
+    "perpetrator_score": 0.0,
+    "combined_score": 38.8,
+    "victim_deaths_total": 963,
+    "perpetrator_deaths_total": 0,
+    "events": [
+      {
+        "name": "Holocaust (Jewish victims)",
+        "years": "1941-1945",
+        "deaths": 963,
+        "role": "victim",
+        "confidence": "high"
+      }
+    ]
+  },
+  "FRA": {
+    "victim_score": 63.2,
+    "perpetrator_score": 0.0,
+    "combined_score": 63.2,
+    "victim_deaths_total": 73450,
+    "perpetrator_deaths_total": 0,
+    "events": [
+      {
+        "name": "Holocaust (Jewish victims)",
+        "years": "1941-1945",
+        "deaths": 73450,
+        "role": "victim",
+        "confidence": "high"
+      }
+    ]
+  },
+  "GRC": {
+    "victim_score": 74.7,
+    "perpetrator_score": 0.0,
+    "combined_score": 74.7,
+    "victim_deaths_total": 562000,
+    "perpetrator_deaths_total": 0,
+    "events": [
+      {
+        "name": "Greek Genocide (Pontic Greeks)",
+        "years": "1914-1923",
+        "deaths": 500000,
+        "role": "victim",
+        "confidence": "medium"
+      },
+      {
+        "name": "Holocaust (Jewish victims)",
+        "years": "1941-1945",
+        "deaths": 62000,
+        "role": "victim",
+        "confidence": "high"
+      }
+    ]
+  },
+  "HUN": {
+    "victim_score": 74.6,
+    "perpetrator_score": 0.0,
+    "combined_score": 74.6,
+    "victim_deaths_total": 550000,
+    "perpetrator_deaths_total": 0,
+    "events": [
+      {
+        "name": "Holocaust (Jewish victims)",
+        "years": "1941-1945",
+        "deaths": 550000,
+        "role": "victim",
+        "confidence": "high"
+      }
+    ]
+  },
+  "IDN": {
+    "victim_score": 74.0,
+    "perpetrator_score": 74.0,
+    "combined_score": 74.0,
+    "victim_deaths_total": 500000,
+    "perpetrator_deaths_total": 500000,
+    "events": [
+      {
+        "name": "Indonesian Mass Killings",
+        "years": "1965-1966",
+        "deaths": 500000,
+        "role": "victim",
+        "confidence": "high"
+      },
+      {
+        "name": "Indonesian Mass Killings",
+        "years": "1965-1966",
+        "deaths": 500000,
+        "role": "perpetrator",
+        "confidence": "high"
+      }
+    ]
+  },
+  "IND": {
+    "victim_score": 77.9,
+    "perpetrator_score": 77.9,
+    "combined_score": 77.9,
+    "victim_deaths_total": 1000000,
+    "perpetrator_deaths_total": 1000000,
+    "events": [
+      {
+        "name": "Partition of India",
+        "years": "1947",
+        "deaths": 1000000,
+        "role": "victim",
+        "confidence": "medium"
+      },
+      {
+        "name": "Partition of India",
+        "years": "1947",
+        "deaths": 1000000,
+        "role": "perpetrator",
+        "confidence": "medium"
+      }
+    ]
+  },
+  "IRQ": {
+    "victim_score": 70.8,
+    "perpetrator_score": 48.0,
+    "combined_score": 70.8,
+    "victim_deaths_total": 280000,
+    "perpetrator_deaths_total": 5000,
+    "events": [
+      {
+        "name": "Assyrian Genocide",
+        "years": "1914-1924",
+        "deaths": 275000,
+        "role": "victim",
+        "confidence": "high"
+      },
+      {
+        "name": "Yazidi Genocide",
+        "years": "2014-2017",
+        "deaths": 5000,
+        "role": "victim",
+        "confidence": "high"
+      },
+      {
+        "name": "Yazidi Genocide",
+        "years": "2014-2017",
+        "deaths": 5000,
+        "role": "perpetrator",
+        "confidence": "high"
+      }
+    ]
+  },
+  "ISR": {
+    "victim_score": 0.0,
+    "perpetrator_score": 63.9,
+    "combined_score": 63.9,
+    "victim_deaths_total": 0,
+    "perpetrator_deaths_total": 83740,
+    "events": [
+      {
+        "name": "Gaza 2023-2025",
+        "years": "2023-2025",
+        "deaths": 83740,
+        "role": "perpetrator",
+        "confidence": "high"
+      },
+      {
+        "name": "Holocaust (survivors to Israel)",
+        "years": "1941-1945",
+        "deaths": 0,
+        "role": "victim",
+        "confidence": "high"
+      }
+    ]
+  },
+  "ITA": {
+    "victim_score": 50.6,
+    "perpetrator_score": 0.0,
+    "combined_score": 50.6,
+    "victim_deaths_total": 7858,
+    "perpetrator_deaths_total": 0,
+    "events": [
+      {
+        "name": "Holocaust (Jewish victims)",
+        "years": "1941-1945",
+        "deaths": 7858,
+        "role": "victim",
+        "confidence": "high"
+      }
+    ]
+  },
+  "JPN": {
+    "victim_score": 0.0,
+    "perpetrator_score": 67.4,
+    "combined_score": 67.4,
+    "victim_deaths_total": 0,
+    "perpetrator_deaths_total": 155300,
+    "events": [
+      {
+        "name": "Nanjing Massacre",
+        "years": "1937-1938",
+        "deaths": 155300,
+        "role": "perpetrator",
+        "confidence": "medium"
+      }
+    ]
+  },
+  "KHM": {
+    "victim_score": 80.9,
+    "perpetrator_score": 80.9,
+    "combined_score": 80.9,
+    "victim_deaths_total": 1700000,
+    "perpetrator_deaths_total": 1700000,
+    "events": [
+      {
+        "name": "Cambodian Genocide",
+        "years": "1975-1979",
+        "deaths": 1700000,
+        "role": "victim",
+        "confidence": "high"
+      },
+      {
+        "name": "Cambodian Genocide",
+        "years": "1975-1979",
+        "deaths": 1700000,
+        "role": "perpetrator",
+        "confidence": "high"
+      }
+    ]
+  },
+  "LTU": {
+    "victim_score": 66.8,
+    "perpetrator_score": 0.0,
+    "combined_score": 66.8,
+    "victim_deaths_total": 140000,
+    "perpetrator_deaths_total": 0,
+    "events": [
+      {
+        "name": "Holocaust (Jewish victims)",
+        "years": "1941-1945",
+        "deaths": 140000,
+        "role": "victim",
+        "confidence": "high"
+      }
+    ]
+  },
+  "LVA": {
+    "victim_score": 62.9,
+    "perpetrator_score": 0.0,
+    "combined_score": 62.9,
+    "victim_deaths_total": 70000,
+    "perpetrator_deaths_total": 0,
+    "events": [
+      {
+        "name": "Holocaust (Jewish victims)",
+        "years": "1941-1945",
+        "deaths": 70000,
+        "role": "victim",
+        "confidence": "high"
+      }
+    ]
+  },
+  "MMR": {
+    "victim_score": 52.7,
+    "perpetrator_score": 52.7,
+    "combined_score": 52.7,
+    "victim_deaths_total": 11393,
+    "perpetrator_deaths_total": 11393,
+    "events": [
+      {
+        "name": "Rohingya Crisis",
+        "years": "2017",
+        "deaths": 11393,
+        "role": "victim",
+        "confidence": "high"
+      },
+      {
+        "name": "Rohingya Crisis",
+        "years": "2017",
+        "deaths": 11393,
+        "role": "perpetrator",
+        "confidence": "high"
+      }
+    ]
+  },
+  "NAM": {
+    "victim_score": 63.3,
+    "perpetrator_score": 0.0,
+    "combined_score": 63.3,
+    "victim_deaths_total": 75000,
+    "perpetrator_deaths_total": 0,
+    "events": [
+      {
+        "name": "Herero and Nama Genocide",
+        "years": "1904-1908",
+        "deaths": 75000,
+        "role": "victim",
+        "confidence": "high"
+      }
+    ]
+  },
+  "NLD": {
+    "victim_score": 65.1,
+    "perpetrator_score": 0.0,
+    "combined_score": 65.1,
+    "victim_deaths_total": 102000,
+    "perpetrator_deaths_total": 0,
+    "events": [
+      {
+        "name": "Holocaust (Jewish victims)",
+        "years": "1941-1945",
+        "deaths": 102000,
+        "role": "victim",
+        "confidence": "high"
+      }
+    ]
+  },
+  "NOR": {
+    "victim_score": 37.4,
+    "perpetrator_score": 0.0,
+    "combined_score": 37.4,
+    "victim_deaths_total": 758,
+    "perpetrator_deaths_total": 0,
+    "events": [
+      {
+        "name": "Holocaust (Jewish victims)",
+        "years": "1941-1945",
+        "deaths": 758,
+        "role": "victim",
+        "confidence": "high"
+      }
+    ]
+  },
+  "PAK": {
+    "victim_score": 77.9,
+    "perpetrator_score": 80.2,
+    "combined_score": 80.2,
+    "victim_deaths_total": 1000000,
+    "perpetrator_deaths_total": 1500000,
+    "events": [
+      {
+        "name": "Partition of India",
+        "years": "1947",
+        "deaths": 1000000,
+        "role": "victim",
+        "confidence": "medium"
+      },
+      {
+        "name": "Partition of India",
+        "years": "1947",
+        "deaths": 1000000,
+        "role": "perpetrator",
+        "confidence": "medium"
+      },
+      {
+        "name": "Bangladesh Genocide",
+        "years": "1971",
+        "deaths": 500000,
+        "role": "perpetrator",
+        "confidence": "medium"
+      }
+    ]
+  },
+  "POL": {
+    "victim_score": 84.1,
+    "perpetrator_score": 0.0,
+    "combined_score": 84.1,
+    "victim_deaths_total": 3000000,
+    "perpetrator_deaths_total": 0,
+    "events": [
+      {
+        "name": "Holocaust (Jewish victims)",
+        "years": "1941-1945",
+        "deaths": 3000000,
+        "role": "victim",
+        "confidence": "high"
+      }
+    ]
+  },
+  "PSE": {
+    "victim_score": 63.9,
+    "perpetrator_score": 0.0,
+    "combined_score": 63.9,
+    "victim_deaths_total": 83740,
+    "perpetrator_deaths_total": 0,
+    "events": [
+      {
+        "name": "Gaza 2023-2025",
+        "years": "2023-2025",
+        "deaths": 83740,
+        "role": "victim",
+        "confidence": "high"
+      }
+    ]
+  },
+  "ROU": {
+    "victim_score": 70.9,
+    "perpetrator_score": 0.0,
+    "combined_score": 70.9,
+    "victim_deaths_total": 290000,
+    "perpetrator_deaths_total": 0,
+    "events": [
+      {
+        "name": "Holocaust (Jewish victims)",
+        "years": "1941-1945",
+        "deaths": 290000,
+        "role": "victim",
+        "confidence": "high"
+      }
+    ]
+  },
+  "RUS": {
+    "victim_score": 76.7,
+    "perpetrator_score": 88.0,
+    "combined_score": 88.0,
+    "victim_deaths_total": 800000,
+    "perpetrator_deaths_total": 5981692,
+    "events": [
+      {
+        "name": "Holodomor (Soviet famine)",
+        "years": "1932-1934",
+        "deaths": 4500000,
+        "role": "perpetrator",
+        "confidence": "high"
+      },
+      {
+        "name": "Circassian Genocide",
+        "years": "1864-1867",
+        "deaths": 800000,
+        "role": "victim",
+        "confidence": "high"
+      },
+      {
+        "name": "Circassian Genocide",
+        "years": "1864-1867",
+        "deaths": 800000,
+        "role": "perpetrator",
+        "confidence": "high"
+      },
+      {
+        "name": "Soviet Great Terror",
+        "years": "1936-1938",
+        "deaths": 681692,
+        "role": "perpetrator",
+        "confidence": "high"
+      }
+    ]
+  },
+  "RWA": {
+    "victim_score": 76.7,
+    "perpetrator_score": 76.7,
+    "combined_score": 76.7,
+    "victim_deaths_total": 800000,
+    "perpetrator_deaths_total": 800000,
+    "events": [
+      {
+        "name": "Rwandan Genocide",
+        "years": "1994",
+        "deaths": 800000,
+        "role": "victim",
+        "confidence": "high"
+      },
+      {
+        "name": "Rwandan Genocide",
+        "years": "1994",
+        "deaths": 800000,
+        "role": "perpetrator",
+        "confidence": "high"
+      }
+    ]
+  },
+  "SRB": {
+    "victim_score": 62.7,
+    "perpetrator_score": 50.3,
+    "combined_score": 62.7,
+    "victim_deaths_total": 67228,
+    "perpetrator_deaths_total": 7500,
+    "events": [
+      {
+        "name": "Holocaust (Jewish victims)",
+        "years": "1941-1945",
+        "deaths": 67228,
+        "role": "victim",
+        "confidence": "high"
+      },
+      {
+        "name": "Srebrenica Genocide",
+        "years": "1995",
+        "deaths": 7500,
+        "role": "perpetrator",
+        "confidence": "high"
+      }
+    ]
+  },
+  "SUN": {
+    "victim_score": 75.8,
+    "perpetrator_score": 0.0,
+    "combined_score": 75.8,
+    "victim_deaths_total": 681692,
+    "perpetrator_deaths_total": 0,
+    "events": [
+      {
+        "name": "Soviet Great Terror",
+        "years": "1936-1938",
+        "deaths": 681692,
+        "role": "victim",
+        "confidence": "high"
+      }
+    ]
+  },
+  "TUR": {
+    "victim_score": 0.0,
+    "perpetrator_score": 81.2,
+    "combined_score": 81.2,
+    "victim_deaths_total": 0,
+    "perpetrator_deaths_total": 1775000,
+    "events": [
+      {
+        "name": "Armenian Genocide",
+        "years": "1915-1923",
+        "deaths": 1000000,
+        "role": "perpetrator",
+        "confidence": "high"
+      },
+      {
+        "name": "Greek Genocide (Pontic Greeks)",
+        "years": "1914-1923",
+        "deaths": 500000,
+        "role": "perpetrator",
+        "confidence": "medium"
+      },
+      {
+        "name": "Assyrian Genocide",
+        "years": "1914-1924",
+        "deaths": 275000,
+        "role": "perpetrator",
+        "confidence": "high"
+      }
+    ]
+  },
+  "UKR": {
+    "victim_score": 87.4,
+    "perpetrator_score": 0.0,
+    "combined_score": 87.4,
+    "victim_deaths_total": 5400000,
+    "perpetrator_deaths_total": 0,
+    "events": [
+      {
+        "name": "Holodomor (Soviet famine)",
+        "years": "1932-1934",
+        "deaths": 4500000,
+        "role": "victim",
+        "confidence": "high"
+      },
+      {
+        "name": "Holocaust (Jewish victims)",
+        "years": "1941-1945",
+        "deaths": 900000,
+        "role": "victim",
+        "confidence": "high"
+      }
+    ]
+  },
+  "ZAF": {
+    "victim_score": 49.9,
+    "perpetrator_score": 49.9,
+    "combined_score": 49.9,
+    "victim_deaths_total": 7000,
+    "perpetrator_deaths_total": 7000,
+    "events": [
+      {
+        "name": "South Africa Apartheid",
+        "years": "1948-1994",
+        "deaths": 7000,
+        "role": "victim",
+        "confidence": "medium"
+      },
+      {
+        "name": "South Africa Apartheid",
+        "years": "1948-1994",
+        "deaths": 7000,
+        "role": "perpetrator",
+        "confidence": "medium"
+      }
+    ]
+  }
+}

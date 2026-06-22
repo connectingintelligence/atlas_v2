@@ -1,0 +1,1089 @@
+{
+ "_meta": {
+  "source": "Derived from v1 pipeline config.py + live cti_scores.json coverage",
+  "note": "coverage: present=countries with a value, nonzero, mean & max of present values (0-100)."
+ },
+ "metaClusters": [
+  {
+   "key": "direct_violence",
+   "name": "Direct Violence",
+   "indicatorKeys": [
+    "tc_armed_conflict",
+    "tc_historical_wars",
+    "tc_political_terror"
+   ],
+   "description": "Comprises: Armed Conflict, Historical Wars / Colonialism, Political Terror & State Violence",
+   "coverage": {
+    "present": 250,
+    "total": 308,
+    "nonzero": 244,
+    "mean": 30.2,
+    "max": 98.6
+   }
+  },
+  {
+   "key": "structural_violence",
+   "name": "Structural Violence",
+   "indicatorKeys": [
+    "tc_structural_inequality",
+    "tc_political_repression",
+    "tc_justice_impunity",
+    "tc_economic_trauma",
+    "tc_digital_oppression"
+   ],
+   "description": "Comprises: Structural Violence & Inequality, Political Repression, Justice & Impunity, Economic Trauma, Digital Oppression & Surveillance",
+   "coverage": {
+    "present": 234,
+    "total": 308,
+    "nonzero": 234,
+    "mean": 43.3,
+    "max": 97.1
+   }
+  },
+  {
+   "key": "identity-based_oppression",
+   "name": "Identity-Based Oppression",
+   "indicatorKeys": [
+    "tc_colonialism",
+    "tc_ethnic_religious",
+    "tc_lgbtq_persecution",
+    "tc_cultural_erasure",
+    "tc_indigenous_dispossession"
+   ],
+   "description": "Comprises: Colonialism, Ethnic & Religious Persecution, LGBTQ+ Persecution, Cultural & Language Erasure, Indigenous Dispossession",
+   "coverage": {
+    "present": 247,
+    "total": 308,
+    "nonzero": 231,
+    "mean": 29.0,
+    "max": 70.9
+   }
+  },
+  {
+   "key": "interpersonal_violence_and_health",
+   "name": "Interpersonal Violence & Health",
+   "indicatorKeys": [
+    "tc_interpersonal_violence",
+    "tc_mental_health",
+    "tc_pandemics",
+    "tc_child_abuse",
+    "tc_gender_violence",
+    "tc_substance_abuse"
+   ],
+   "description": "Comprises: Interpersonal Violence, Mental Health & Suicide, Pandemics & Health Crises, Child Abuse & Exploitation, Gender-Based Violence, Substance Abuse & Addiction",
+   "coverage": {
+    "present": 237,
+    "total": 308,
+    "nonzero": 237,
+    "mean": 35.4,
+    "max": 62.3
+   }
+  },
+  {
+   "key": "displacement_and_environment",
+   "name": "Displacement & Environment",
+   "indicatorKeys": [
+    "tc_forced_displacement",
+    "tc_environmental_trauma"
+   ],
+   "description": "Comprises: Forced Displacement, Environmental & Climate Trauma",
+   "coverage": {
+    "present": 201,
+    "total": 308,
+    "nonzero": 197,
+    "mean": 25.5,
+    "max": 67.8
+   }
+  },
+  {
+   "key": "wars_and_perpetration",
+   "name": "Wars & Perpetration",
+   "indicatorKeys": [
+    "tc_historical_warfare",
+    "tc_perpetration_trauma"
+   ],
+   "description": "Comprises: Historical Warfare, Perpetration Trauma",
+   "coverage": {
+    "present": 308,
+    "total": 308,
+    "nonzero": 99,
+    "mean": 2.5,
+    "max": 70.1
+   }
+  },
+  {
+   "key": "genocide_and_mass_atrocities",
+   "name": "Genocide & Mass Atrocities",
+   "indicatorKeys": [
+    "tc_genocide_victimhood",
+    "tc_genocide_perpetration",
+    "tc_authoritarian_rule"
+   ],
+   "description": "Comprises: Genocide Victimhood, Genocide Perpetration, Authoritarian Rule",
+   "coverage": {
+    "present": 308,
+    "total": 308,
+    "nonzero": 181,
+    "mean": 23.9,
+    "max": 76.3
+   }
+  },
+  {
+   "key": "famines_and_disasters",
+   "name": "Famines & Disasters",
+   "indicatorKeys": [
+    "tc_famine_mortality",
+    "tc_natural_disaster_deaths"
+   ],
+   "description": "Comprises: Famine & Starvation, Natural Disaster Deaths",
+   "coverage": {
+    "present": 308,
+    "total": 308,
+    "nonzero": 91,
+    "mean": 2.2,
+    "max": 50.0
+   }
+  }
+ ],
+ "indicators": {
+  "tc_armed_conflict": {
+   "name": "Armed Conflict",
+   "description": "Active wars, battle deaths, military violence",
+   "metaCluster": "Direct Violence",
+   "metaClusterKey": "direct_violence",
+   "sources": [
+    {
+     "id": "acled_conflict_index",
+     "url": "https://acleddata.com/conflict-index/",
+     "notes": "ACLED Conflict Index - composite score per country. May need manual download or API key."
+    }
+   ],
+   "coverage": {
+    "present": 163,
+    "total": 308,
+    "nonzero": 162,
+    "mean": 27.8,
+    "max": 100.0
+   }
+  },
+  "tc_historical_wars": {
+   "name": "Historical Wars / Colonialism",
+   "description": "Colonial rule, duration, major historical wars",
+   "metaCluster": "Direct Violence",
+   "metaClusterKey": "direct_violence",
+   "sources": [
+    {
+     "id": "coldat",
+     "url": "https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi:10.7910/DVN/T9SDEW",
+     "notes": "COLDAT 3.0 - colonial duration per country, 1462-2022"
+    }
+   ],
+   "coverage": {
+    "present": 190,
+    "total": 308,
+    "nonzero": 124,
+    "mean": 20.0,
+    "max": 100.0
+   }
+  },
+  "tc_political_terror": {
+   "name": "Political Terror & State Violence",
+   "description": "Torture, disappearances, press suppression",
+   "metaCluster": "Direct Violence",
+   "metaClusterKey": "direct_violence",
+   "sources": [
+    {
+     "id": "pts",
+     "url": "http://www.politicalterrorscale.org/Data/Download.html",
+     "notes": "Political Terror Scale - 1-5 scale, annual"
+    },
+    {
+     "id": "vdem_physical_violence",
+     "url": "https://v-dem.net/data/the-v-dem-dataset/",
+     "notes": "V-Dem physical violence index"
+    }
+   ],
+   "coverage": {
+    "present": 241,
+    "total": 308,
+    "nonzero": 233,
+    "mean": 36.0,
+    "max": 100.0
+   }
+  },
+  "tc_structural_inequality": {
+   "name": "Structural Violence & Inequality",
+   "description": "Poverty, inequality, gender inequality, caste systems",
+   "metaCluster": "Structural Violence",
+   "metaClusterKey": "structural_violence",
+   "sources": [
+    {
+     "id": "gini",
+     "url": "https://data.worldbank.org/indicator/SI.POV.GINI",
+     "notes": "World Bank Gini coefficient"
+    },
+    {
+     "id": "ihdi",
+     "url": "",
+     "notes": ""
+    },
+    {
+     "id": "gii",
+     "url": "",
+     "notes": ""
+    }
+   ],
+   "coverage": {
+    "present": 190,
+    "total": 308,
+    "nonzero": 190,
+    "mean": 39.6,
+    "max": 88.5
+   }
+  },
+  "tc_political_repression": {
+   "name": "Political Repression",
+   "description": "Authoritarian rule, political prisoners",
+   "metaCluster": "Structural Violence",
+   "metaClusterKey": "structural_violence",
+   "sources": [
+    {
+     "id": "vdem_liberal_democracy",
+     "url": "https://v-dem.net/data/the-v-dem-dataset/",
+     "notes": "V-Dem Liberal Democracy Index, 0-1 scale"
+    },
+    {
+     "id": "freedom_house",
+     "url": "https://freedomhouse.org/report/freedom-world",
+     "notes": "Freedom in the World - aggregate score 0-100"
+    }
+   ],
+   "coverage": {
+    "present": 230,
+    "total": 308,
+    "nonzero": 230,
+    "mean": 49.7,
+    "max": 98.6
+   }
+  },
+  "tc_justice_impunity": {
+   "name": "Justice & Impunity",
+   "description": "Corruption, absence of rule of law",
+   "metaCluster": "Structural Violence",
+   "metaClusterKey": "structural_violence",
+   "sources": [
+    {
+     "id": "ti_cpi",
+     "url": "https://www.transparency.org/en/cpi",
+     "notes": "Transparency International CPI - 0-100 (100=clean), invert for trauma"
+    },
+    {
+     "id": "wjp_rule_of_law",
+     "url": "https://worldjusticeproject.org/rule-of-law-index/",
+     "notes": "WJP Rule of Law Index - 0-1 (1=strong), invert for trauma"
+    }
+   ],
+   "coverage": {
+    "present": 205,
+    "total": 308,
+    "nonzero": 205,
+    "mean": 52.3,
+    "max": 99.1
+   }
+  },
+  "tc_economic_trauma": {
+   "name": "Economic Trauma",
+   "description": "Hyperinflation, debt crises, modern slavery",
+   "metaCluster": "Structural Violence",
+   "metaClusterKey": "structural_violence",
+   "sources": [
+    {
+     "id": "walk_free_gsi",
+     "url": "https://www.walkfree.org/global-slavery-index/",
+     "notes": "Global Slavery Index - prevalence per 1000"
+    }
+   ],
+   "coverage": {
+    "present": 200,
+    "total": 308,
+    "nonzero": 200,
+    "mean": 25.7,
+    "max": 96.6
+   }
+  },
+  "tc_colonialism": {
+   "name": "Colonialism",
+   "description": "Colonial rule, duration, exploitation",
+   "metaCluster": "Identity-Based Oppression",
+   "metaClusterKey": "identity-based_oppression",
+   "sources": [
+    {
+     "id": "coldat",
+     "url": "https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi:10.7910/DVN/T9SDEW",
+     "notes": "COLDAT 3.0 - colonial duration per country, 1462-2022"
+    }
+   ],
+   "coverage": {
+    "present": 194,
+    "total": 308,
+    "nonzero": 127,
+    "mean": 19.8,
+    "max": 100.0
+   }
+  },
+  "tc_ethnic_religious": {
+   "name": "Ethnic & Religious Persecution",
+   "description": "Discrimination, sectarian violence",
+   "metaCluster": "Identity-Based Oppression",
+   "metaClusterKey": "identity-based_oppression",
+   "sources": [
+    {
+     "id": "pew_gri_shi",
+     "url": "https://www.pewresearch.org/religion/",
+     "notes": "Pew GRI (govt restrictions) + SHI (social hostilities) indices"
+    }
+   ],
+   "coverage": {
+    "present": 198,
+    "total": 308,
+    "nonzero": 197,
+    "mean": 33.2,
+    "max": 100.0
+   }
+  },
+  "tc_lgbtq_persecution": {
+   "name": "LGBTQ+ Persecution",
+   "description": "Criminalization, violence, exclusion",
+   "metaCluster": "Identity-Based Oppression",
+   "metaClusterKey": "identity-based_oppression",
+   "sources": [
+    {
+     "id": "equaldex",
+     "url": "https://www.equaldex.com/",
+     "notes": "Equaldex Equality Index - 0-100 (100=equal), invert for persecution"
+    }
+   ],
+   "coverage": {
+    "present": 196,
+    "total": 308,
+    "nonzero": 196,
+    "mean": 60.5,
+    "max": 99.0
+   }
+  },
+  "tc_interpersonal_violence": {
+   "name": "Interpersonal Violence",
+   "description": "Homicide, domestic violence, child abuse",
+   "metaCluster": "Interpersonal Violence & Health",
+   "metaClusterKey": "interpersonal_violence_and_health",
+   "sources": [
+    {
+     "id": "unodc_homicide",
+     "url": "https://dataunodc.un.org/dp-intentional-homicide-victims",
+     "notes": "UNODC intentional homicide rate per 100k"
+    }
+   ],
+   "coverage": {
+    "present": 199,
+    "total": 308,
+    "nonzero": 190,
+    "mean": 34.7,
+    "max": 100.0
+   }
+  },
+  "tc_mental_health": {
+   "name": "Mental Health & Suicide",
+   "description": "PTSD, depression, suicide rates",
+   "metaCluster": "Interpersonal Violence & Health",
+   "metaClusterKey": "interpersonal_violence_and_health",
+   "sources": [
+    {
+     "id": "gbd_mental_health",
+     "url": "https://vizhub.healthdata.org/gbd-results",
+     "notes": "GBD 2021 - DALYs for depression + anxiety + PTSD"
+    },
+    {
+     "id": "who_suicide",
+     "url": "https://www.who.int/data/gho/data/themes/mental-health/suicide-rates",
+     "notes": "WHO suicide rates per 100k"
+    }
+   ],
+   "coverage": {
+    "present": 178,
+    "total": 308,
+    "nonzero": 177,
+    "mean": 53.5,
+    "max": 100.0
+   }
+  },
+  "tc_pandemics": {
+   "name": "Pandemics & Health Crises",
+   "description": "Epidemic mortality, healthcare collapse",
+   "metaCluster": "Interpersonal Violence & Health",
+   "metaClusterKey": "interpersonal_violence_and_health",
+   "sources": [
+    {
+     "id": "gbd_health",
+     "url": "https://vizhub.healthdata.org/gbd-results",
+     "notes": "GBD 2021 - communicable disease DALYs"
+    }
+   ],
+   "coverage": {
+    "present": 236,
+    "total": 308,
+    "nonzero": 236,
+    "mean": 46.3,
+    "max": 96.4
+   }
+  },
+  "tc_forced_displacement": {
+   "name": "Forced Displacement",
+   "description": "Refugees, IDPs, statelessness",
+   "metaCluster": "Displacement & Environment",
+   "metaClusterKey": "displacement_and_environment",
+   "sources": [
+    {
+     "id": "unhcr",
+     "url": "https://www.unhcr.org/refugee-statistics/download",
+     "notes": "UNHCR refugee + IDP data by origin country"
+    }
+   ],
+   "coverage": {
+    "present": 97,
+    "total": 308,
+    "nonzero": 97,
+    "mean": 50.5,
+    "max": 100.0
+   }
+  },
+  "tc_environmental_trauma": {
+   "name": "Environmental & Climate Trauma",
+   "description": "Climate disasters, ecological collapse",
+   "metaCluster": "Displacement & Environment",
+   "metaClusterKey": "displacement_and_environment",
+   "sources": [
+    {
+     "id": "nd_gain",
+     "url": "https://gain.nd.edu/our-work/country-index/download-data/",
+     "notes": "ND-GAIN vulnerability index - higher = more vulnerable"
+    }
+   ],
+   "coverage": {
+    "present": 198,
+    "total": 308,
+    "nonzero": 194,
+    "mean": 17.8,
+    "max": 61.4
+   }
+  },
+  "tc_historical_warfare": {
+   "name": "Historical Warfare",
+   "description": "Total war deaths across 200 years of inter-state, intra-state, and extra-state wars (COW 1816-2007)",
+   "metaCluster": "Wars & Perpetration",
+   "metaClusterKey": "wars_and_perpetration",
+   "sources": [
+    {
+     "id": "cow_interstate",
+     "url": "",
+     "notes": ""
+    },
+    {
+     "id": "cow_intrastate",
+     "url": "",
+     "notes": ""
+    },
+    {
+     "id": "cow_extrastate",
+     "url": "",
+     "notes": ""
+    }
+   ],
+   "coverage": {
+    "present": 308,
+    "total": 308,
+    "nonzero": 97,
+    "mean": 2.0,
+    "max": 100.0
+   }
+  },
+  "tc_perpetration_trauma": {
+   "name": "Perpetration Trauma",
+   "description": "Trauma carried by nations that initiated wars or perpetrated mass violence",
+   "metaCluster": "Wars & Perpetration",
+   "metaClusterKey": "wars_and_perpetration",
+   "sources": [
+    {
+     "id": "cow_interstate",
+     "url": "",
+     "notes": ""
+    }
+   ],
+   "coverage": {
+    "present": 308,
+    "total": 308,
+    "nonzero": 82,
+    "mean": 3.0,
+    "max": 100.0
+   }
+  },
+  "tc_genocide_victimhood": {
+   "name": "Genocide Victimhood",
+   "description": "Deaths from genocide, democide, mass killings suffered by this country's population",
+   "metaCluster": "Genocide & Mass Atrocities",
+   "metaClusterKey": "genocide_and_mass_atrocities",
+   "sources": [
+    {
+     "id": "genocide_mass_atrocities",
+     "url": "",
+     "notes": ""
+    },
+    {
+     "id": "pitf_genopoliticide",
+     "url": "",
+     "notes": ""
+    },
+    {
+     "id": "ucdp_onesided",
+     "url": "https://ucdp.uu.se/downloads/nsos/ucdp-onesided-251-csv.zip",
+     "notes": "UCDP One-sided Violence v25.1 (1989-2024). Government and armed group attacks on civilians. Aggregated by country."
+    },
+    {
+     "id": "acled_civilian",
+     "url": "",
+     "notes": ""
+    }
+   ],
+   "coverage": {
+    "present": 308,
+    "total": 308,
+    "nonzero": 110,
+    "mean": 8.6,
+    "max": 100.0
+   }
+  },
+  "tc_genocide_perpetration": {
+   "name": "Genocide Perpetration",
+   "description": "Deaths caused by this country as perpetrator of genocide/mass atrocities",
+   "metaCluster": "Genocide & Mass Atrocities",
+   "metaClusterKey": "genocide_and_mass_atrocities",
+   "sources": [
+    {
+     "id": "genocide_mass_atrocities",
+     "url": "",
+     "notes": ""
+    }
+   ],
+   "coverage": {
+    "present": 61,
+    "total": 308,
+    "nonzero": 61,
+    "mean": 70.3,
+    "max": 88.8
+   }
+  },
+  "tc_authoritarian_rule": {
+   "name": "Authoritarian Rule",
+   "description": "Years under autocratic/dictatorial rule since 1900 (V-Dem Regimes of the World)",
+   "metaCluster": "Genocide & Mass Atrocities",
+   "metaClusterKey": "genocide_and_mass_atrocities",
+   "sources": [
+    {
+     "id": "vdem_regime_history",
+     "url": "",
+     "notes": ""
+    }
+   ],
+   "coverage": {
+    "present": 308,
+    "total": 308,
+    "nonzero": 180,
+    "mean": 36.5,
+    "max": 100.0
+   }
+  },
+  "tc_famine_mortality": {
+   "name": "Famine & Starvation",
+   "description": "Deaths from major famines (100k+ deaths), 1870-present",
+   "metaCluster": "Famines & Disasters",
+   "metaClusterKey": "famines_and_disasters",
+   "sources": [
+    {
+     "id": "owid_famines",
+     "url": "",
+     "notes": ""
+    }
+   ],
+   "coverage": {
+    "present": 308,
+    "total": 308,
+    "nonzero": 34,
+    "mean": 3.8,
+    "max": 100.0
+   }
+  },
+  "tc_natural_disaster_deaths": {
+   "name": "Natural Disaster Deaths",
+   "description": "Cumulative deaths from earthquakes, floods, droughts, storms (EM-DAT 1900-2025)",
+   "metaCluster": "Famines & Disasters",
+   "metaClusterKey": "famines_and_disasters",
+   "sources": [
+    {
+     "id": "emdat_disasters",
+     "url": "",
+     "notes": ""
+    }
+   ],
+   "coverage": {
+    "present": 308,
+    "total": 308,
+    "nonzero": 116,
+    "mean": 0.6,
+    "max": 100.0
+   }
+  },
+  "tc_child_abuse": {
+   "name": "Child Abuse & Exploitation",
+   "description": "FGM, child marriage, child labor, violent discipline prevalence (UNICEF)",
+   "metaCluster": "Interpersonal Violence & Health",
+   "metaClusterKey": "interpersonal_violence_and_health",
+   "sources": [
+    {
+     "id": "unicef_child_protection",
+     "url": "",
+     "notes": ""
+    }
+   ],
+   "coverage": {
+    "present": 148,
+    "total": 308,
+    "nonzero": 141,
+    "mean": 18.7,
+    "max": 70.8
+   }
+  },
+  "tc_gender_violence": {
+   "name": "Gender-Based Violence",
+   "description": "Intimate partner violence lifetime prevalence (WHO 2023)",
+   "metaCluster": "Interpersonal Violence & Health",
+   "metaClusterKey": "interpersonal_violence_and_health",
+   "sources": [
+    {
+     "id": "who_ipv",
+     "url": "",
+     "notes": ""
+    }
+   ],
+   "coverage": {
+    "present": 151,
+    "total": 308,
+    "nonzero": 151,
+    "mean": 26.4,
+    "max": 53.0
+   }
+  },
+  "tc_substance_abuse": {
+   "name": "Substance Abuse & Addiction",
+   "description": "Alcohol consumption per capita, alcohol use disorder prevalence (WHO GISAH)",
+   "metaCluster": "Interpersonal Violence & Health",
+   "metaClusterKey": "interpersonal_violence_and_health",
+   "sources": [
+    {
+     "id": "who_gisah",
+     "url": "",
+     "notes": ""
+    }
+   ],
+   "coverage": {
+    "present": 188,
+    "total": 308,
+    "nonzero": 181,
+    "mean": 31.1,
+    "max": 100.0
+   }
+  },
+  "tc_cultural_erasure": {
+   "name": "Cultural & Language Erasure",
+   "description": "Endangered and extinct languages by country (UNESCO/Ethnologue/Glottolog)",
+   "metaCluster": "Identity-Based Oppression",
+   "metaClusterKey": "identity-based_oppression",
+   "sources": [
+    {
+     "id": "endangered_languages",
+     "url": "",
+     "notes": ""
+    }
+   ],
+   "coverage": {
+    "present": 244,
+    "total": 308,
+    "nonzero": 206,
+    "mean": 26.3,
+    "max": 100.0
+   }
+  },
+  "tc_indigenous_dispossession": {
+   "name": "Indigenous Dispossession",
+   "description": "Politically excluded ethnic groups, discriminated populations (EPR 2021)",
+   "metaCluster": "Identity-Based Oppression",
+   "metaClusterKey": "identity-based_oppression",
+   "sources": [
+    {
+     "id": "epr_ethnic_exclusion",
+     "url": "",
+     "notes": ""
+    }
+   ],
+   "coverage": {
+    "present": 173,
+    "total": 308,
+    "nonzero": 125,
+    "mean": 9.6,
+    "max": 56.0
+   }
+  },
+  "tc_digital_oppression": {
+   "name": "Digital Oppression & Surveillance",
+   "description": "Internet freedom, shutdowns, censorship, surveillance (Freedom on the Net 2024)",
+   "metaCluster": "Structural Violence",
+   "metaClusterKey": "structural_violence",
+   "sources": [
+    {
+     "id": "freedom_on_the_net",
+     "url": "",
+     "notes": ""
+    }
+   ],
+   "coverage": {
+    "present": 202,
+    "total": 308,
+    "nonzero": 202,
+    "mean": 42.2,
+    "max": 98.7
+   }
+  }
+ },
+ "resilience": {
+  "rf_democracy": {
+   "name": "Democracy & Governance",
+   "sources": [
+    {
+     "id": "vdem_liberal_democracy",
+     "url": "https://v-dem.net/data/the-v-dem-dataset/",
+     "notes": "V-Dem Liberal Democracy Index, 0-1 scale"
+    }
+   ],
+   "invert": false,
+   "coverage": {
+    "present": 232,
+    "total": 308,
+    "nonzero": 232,
+    "mean": 57.1,
+    "max": 98.8
+   }
+  },
+  "rf_social_trust": {
+   "name": "Social Trust",
+   "sources": [
+    {
+     "id": "wvs_trust",
+     "url": "https://www.worldvaluessurvey.org",
+     "notes": "World Values Survey - interpersonal trust %"
+    },
+    {
+     "id": "afrobarometer_r9",
+     "url": "",
+     "notes": ""
+    },
+    {
+     "id": "latinobarometro_2023",
+     "url": "",
+     "notes": ""
+    }
+   ],
+   "invert": false,
+   "coverage": {
+    "present": 105,
+    "total": 308,
+    "nonzero": 105,
+    "mean": 19.2,
+    "max": 65.4
+   }
+  },
+  "rf_peace": {
+   "name": "Peace",
+   "sources": [
+    {
+     "id": "gpi",
+     "url": "https://www.visionofhumanity.org/maps/",
+     "notes": "Global Peace Index - lower = more peaceful"
+    }
+   ],
+   "invert": true,
+   "coverage": {
+    "present": 231,
+    "total": 308,
+    "nonzero": 231,
+    "mean": 57.8,
+    "max": 97.6
+   }
+  },
+  "rf_governance_quality": {
+   "name": "Governance Quality",
+   "sources": [
+    {
+     "id": "wgi",
+     "url": "https://info.worldbank.org/governance/wgi",
+     "notes": "Worldwide Governance Indicators - govt effectiveness"
+    }
+   ],
+   "invert": false,
+   "coverage": {
+    "present": 205,
+    "total": 308,
+    "nonzero": 205,
+    "mean": 49.7,
+    "max": 100.0
+   }
+  },
+  "rf_press_freedom": {
+   "name": "Press Freedom",
+   "sources": [
+    {
+     "id": "rsf",
+     "url": "https://rsf.org/en/index",
+     "notes": "RSF Press Freedom Index - lower = more free"
+    }
+   ],
+   "invert": true,
+   "coverage": {
+    "present": 178,
+    "total": 308,
+    "nonzero": 177,
+    "mean": 50.8,
+    "max": 100.0
+   }
+  },
+  "rf_wellbeing": {
+   "name": "Wellbeing & Happiness",
+   "sources": [
+    {
+     "id": "whr_happiness",
+     "url": "",
+     "notes": ""
+    }
+   ],
+   "invert": false,
+   "coverage": {
+    "present": 158,
+    "total": 308,
+    "nonzero": 157,
+    "mean": 65.1,
+    "max": 100.0
+   }
+  },
+  "rf_biodiversity": {
+   "name": "Biodiversity & Habitat",
+   "sources": [
+    {
+     "id": "epi_bdh",
+     "url": "",
+     "notes": ""
+    }
+   ],
+   "invert": false,
+   "coverage": {
+    "present": 180,
+    "total": 308,
+    "nonzero": 180,
+    "mean": 47.5,
+    "max": 85.6
+   }
+  },
+  "rf_environmental_quality": {
+   "name": "Clean Air, Water & Sustainability",
+   "sources": [
+    {
+     "id": "epi_eco",
+     "url": "",
+     "notes": ""
+    },
+    {
+     "id": "pm25_inverted",
+     "url": "",
+     "notes": ""
+    }
+   ],
+   "invert": false,
+   "coverage": {
+    "present": 194,
+    "total": 308,
+    "nonzero": 194,
+    "mean": 71.7,
+    "max": 100.0
+   }
+  },
+  "rf_transitional_justice": {
+   "name": "Transitional Justice",
+   "sources": [
+    {
+     "id": "tjrc_transitional_justice",
+     "url": "",
+     "notes": ""
+    }
+   ],
+   "invert": false,
+   "coverage": {
+    "present": 192,
+    "total": 308,
+    "nonzero": 191,
+    "mean": 41.9,
+    "max": 100.0
+   }
+  },
+  "rf_health": {
+   "name": "Health & Healthcare Access",
+   "sources": [
+    {
+     "id": "owid_life_expectancy",
+     "url": "",
+     "notes": ""
+    },
+    {
+     "id": "worldbank_health_expenditure",
+     "url": "",
+     "notes": ""
+    },
+    {
+     "id": "worldbank_maternal_mortality",
+     "url": "",
+     "notes": ""
+    }
+   ],
+   "invert": false,
+   "coverage": {
+    "present": 236,
+    "total": 308,
+    "nonzero": 236,
+    "mean": 59.8,
+    "max": 100.0
+   }
+  },
+  "rf_gender_equality": {
+   "name": "Gender Equality & Women in Governance",
+   "sources": [
+    {
+     "id": "undp_gii",
+     "url": "",
+     "notes": ""
+    },
+    {
+     "id": "wps_index",
+     "url": "",
+     "notes": ""
+    },
+    {
+     "id": "worldbank_women_parliament",
+     "url": "",
+     "notes": ""
+    }
+   ],
+   "invert": false,
+   "coverage": {
+    "present": 194,
+    "total": 308,
+    "nonzero": 193,
+    "mean": 55.8,
+    "max": 88.4
+   }
+  },
+  "rf_womens_education": {
+   "name": "Women's Education & Literacy",
+   "sources": [
+    {
+     "id": "worldbank_literacy_rate",
+     "url": "",
+     "notes": ""
+    },
+    {
+     "id": "undp_hdi",
+     "url": "",
+     "notes": ""
+    }
+   ],
+   "invert": false,
+   "coverage": {
+    "present": 197,
+    "total": 308,
+    "nonzero": 197,
+    "mean": 74.2,
+    "max": 100.0
+   }
+  },
+  "rf_womens_power": {
+   "name": "Women's Power & Economic Agency",
+   "sources": [
+    {
+     "id": "worldbank_women_management",
+     "url": "",
+     "notes": ""
+    },
+    {
+     "id": "worldbank_women_labor_force",
+     "url": "",
+     "notes": ""
+    },
+    {
+     "id": "ipu_women_parliament_2026",
+     "url": "",
+     "notes": ""
+    },
+    {
+     "id": "wbl26_entrepreneurship",
+     "url": "",
+     "notes": ""
+    },
+    {
+     "id": "wbl26_assets",
+     "url": "",
+     "notes": ""
+    }
+   ],
+   "invert": false,
+   "coverage": {
+    "present": 194,
+    "total": 308,
+    "nonzero": 194,
+    "mean": 57.9,
+    "max": 82.2
+   }
+  },
+  "rf_belonging": {
+   "name": "Belonging, Social Support & Positive Experiences",
+   "sources": [
+    {
+     "id": "whr26_social_support",
+     "url": "",
+     "notes": ""
+    },
+    {
+     "id": "whr26_freedom_choices",
+     "url": "",
+     "notes": ""
+    },
+    {
+     "id": "wvs_trust",
+     "url": "https://www.worldvaluessurvey.org",
+     "notes": "World Values Survey - interpersonal trust %"
+    }
+   ],
+   "invert": false,
+   "coverage": {
+    "present": 155,
+    "total": 308,
+    "nonzero": 154,
+    "mean": 61.1,
+    "max": 93.1
+   }
+  }
+ }
+}
