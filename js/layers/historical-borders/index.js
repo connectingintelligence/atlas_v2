@@ -40,6 +40,7 @@ export default {
   id: 'historical-borders',
   label: 'Historical borders',
   group: 'surface',
+  temporal: { min: 1400, max: 2010 },   // era sheets ERAS[0]..ERAS[last]; raises the scrubber on its own
   methodologyPath: 'methodology/historical-borders.md',
   controls: [
     { id: 'opacity', label: 'Opacity', type: 'slider', default: 0.55, min: 0.05, max: 1, step: 0.05 },

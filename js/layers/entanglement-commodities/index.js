@@ -47,6 +47,7 @@ export default {
   id: 'entanglement-commodities',
   label: 'Commodities',
   group: 'entanglement',
+  temporal: { min: 2022, max: 2024 },   // BACI HS6 trade — only these years exist
   methodologyPath: 'methodology/commodities.md',
   dataPath: 'data/commodities.json',
   controls: [
@@ -130,10 +131,11 @@ export default {
       const op = +ctx.getControl('opacity');
       const vis = visible();
       const display = ctx.getControl('display') || 'particles';
-      // particles-only hides arcs unless a country is pinned (its arcs still
-      // draw — the renderer culls to arcs touching the pin)
-      const pinned = ctx.globe?.state?.pinnedIso || null;
-      const showArcs = display !== 'particles' || !!pinned;
+      // particles-only stays particles-only EVEN WHEN a country is pinned —
+      // arcs are strictly opt-in via the Display control ("Arcs + particles" /
+      // "Arcs only"). Pinning still focuses the particles (particle-flow reads
+      // the pin); it must not summon commodity lines on its own.
+      const showArcs = display !== 'particles';
       arcs.draw(showArcs ? vis : [], {
         color: (d) => COMMODITY[d.commodity]?.color || '#999',
         width: (d) => widthOf(d.value),

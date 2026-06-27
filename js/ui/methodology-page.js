@@ -91,6 +91,18 @@ function injectStyles() {
 
   #methodology .merr { color:var(--arc-perp); font-style:italic; }
   #methodology .mloading { color:var(--ink-faint); font-style:italic; }
+
+  /* ── Phone pass (Agent F): full-screen sheet ≤640px ─────────── */
+  @media (max-width:640px){
+    #methodology { width:100%; max-width:100%; top:0; bottom:auto; height:100dvh;
+      border-left:none; box-shadow:none; }
+    #methodology .mhead { padding:calc(env(safe-area-inset-top) + 18px)
+      calc(env(safe-area-inset-right) + 18px) 16px calc(env(safe-area-inset-left) + 18px); }
+    #methodology .mclose { width:44px; height:44px; font-size:21px; }
+    #methodology .mscroll { -webkit-overflow-scrolling:touch; overscroll-behavior:contain;
+      padding:22px calc(env(safe-area-inset-right) + 20px)
+      calc(env(safe-area-inset-bottom) + 40px) calc(env(safe-area-inset-left) + 20px); }
+  }
   `;
   const style = document.createElement('style');
   style.id = 'atlas-methodology-css';

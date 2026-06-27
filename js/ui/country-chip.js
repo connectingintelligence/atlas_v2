@@ -45,7 +45,19 @@ function injectStyles() {
   #country-chip button:hover:not(:disabled) { color:var(--ink); background:var(--rule); }
   #country-chip button:disabled { opacity:.35; cursor:default; }
   #country-chip .cc-unpin { border:none; padding:4px 7px; font-size:13px; }
-  @media (max-width:900px){ #country-chip { top:64px; right:12px; } }`;
+  @media (max-width:900px){ #country-chip { top:64px; right:12px; } }
+
+  /* ── phones: keep it top-right but below the safe-area inset, cap its width
+     so it never spans the screen, and grow the buttons to >=40px tap targets ── */
+  @media (max-width:640px){
+    #country-chip { top: calc(env(safe-area-inset-top) + 52px); right:12px; left:auto;
+      max-width: min(56vw, 210px); }
+    #country-chip .cc-row { flex-wrap:wrap; gap:8px; }
+    #country-chip .cc-name { max-width:54vw; }
+    #country-chip button { min-height:40px; padding:9px 13px; font-size:10px; }
+    #country-chip .cc-unpin { min-width:40px; min-height:40px; padding:0; font-size:18px;
+      display:flex; align-items:center; justify-content:center; }
+  }`;
   const s = document.createElement('style');
   s.id = 'country-chip-css'; s.textContent = css;
   document.head.appendChild(s);

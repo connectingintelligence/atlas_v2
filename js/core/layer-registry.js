@@ -63,6 +63,10 @@ export class LayerRegistry {
       methodologyPath: e.module.methodologyPath, controls: e.module.controls || [],
       visible: e.visible, controlValues: { ...e.controlValues },
       beta: !!e.module.beta, passcode: e.module.passcode || null,
+      // declared data year-extent for time-driven layers that read the global
+      // year but expose no 'year' slider (borders/slavetrade/commodities) — lets
+      // the time-scrubber treat them as time-aware and size its axis to real data
+      temporal: e.module.temporal || null,
     };
   }
 

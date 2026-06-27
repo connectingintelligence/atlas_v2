@@ -100,6 +100,26 @@ function injectStyles() {
   .ctrl-toggle > span { justify-content:flex-start; gap:9px; align-items:center; }
   .ctrl-toggle input { accent-color:var(--accent); }
   .ctrl-opacity { border-top:1px dashed var(--rule); padding-top:9px; margin-top:2px; }
+
+  /* ── PHONE (≤640px): turn the left rail into a bottom sheet ──────
+     Desktop (>640px) rules above are untouched. mobile-shell.js toggles
+     .sheet-open and drives the drag; here we own the sheet chrome. */
+  @media (max-width:640px) {
+    #layers { position:fixed; left:0; right:0; bottom:0; top:auto; transform:translateY(101%);
+      width:100%; max-width:100%; max-height:82dvh; overflow-y:auto;
+      border-radius:16px 16px 0 0; padding:22px 18px;
+      /* clear the floating Layers FAB (48px tall at bottom+16) so it never
+         overlaps the last row / Beta-layer footer when scrolled to the end */
+      padding-bottom:calc(env(safe-area-inset-bottom) + 76px);
+      transition:transform .34s cubic-bezier(.22,.8,.25,1); z-index:71;
+      box-shadow:0 -8px 30px var(--shadow); -webkit-overflow-scrolling:touch; }
+    #layers.sheet-open { transform:translateY(0); }
+    /* grip/handle — small centred drag bar in the top grip zone */
+    #layers::before { content:""; position:absolute; top:9px; left:50%; transform:translateX(-50%);
+      width:36px; height:4px; border-radius:2px; background:var(--rule); }
+    /* a touch more breathing room so the grip doesn't crowd the first heading */
+    #layers h3:first-child { margin-top:6px; }
+  }
   `;
   const style = document.createElement('style');
   style.id = 'atlas-layer-panel-css';

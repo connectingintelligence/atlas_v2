@@ -84,7 +84,25 @@ function injectStyles() {
     background: var(--accent, #b0522a); color: var(--accent-ink, #f1ebe1); border-color: var(--accent, #b0522a);
   }
   /* when the time axis is off, fade the slider + bounds so it reads as inactive */
-  #time-scrubber.alltime .ts-range, #time-scrubber.alltime .ts-bounds { opacity: .35; }`;
+  #time-scrubber.alltime .ts-range, #time-scrubber.alltime .ts-bounds { opacity: .35; }
+
+  /* ── phones: lift above the bottom layout contract (FAB / controls / theme
+     all sit at bottom+16px); keep centred and inside the viewport ── */
+  @media (max-width:640px){
+    #time-scrubber {
+      bottom: calc(env(safe-area-inset-bottom) + 80px);
+      width: auto; max-width: 94vw; gap: 10px; padding: 7px 14px 7px 7px;
+    }
+    #time-scrubber .ts-bounds { display: none; } /* save width on narrow screens */
+    #time-scrubber .ts-play { width: 40px; height: 40px; font-size: 15px; } /* tap target */
+    #time-scrubber .ts-readout { font-size: 19px; min-width: 46px; }
+    #time-scrubber .ts-alltime { padding: 9px 12px; }
+    /* contracts badge rides just above the lifted scrubber (inline style → !important) */
+    #time-contracts {
+      bottom: calc(env(safe-area-inset-bottom) + 136px) !important;
+      max-width: 94vw !important;
+    }
+  }`;
   const s = document.createElement('style');
   s.id = 'atlas-time-scrubber-css';
   s.textContent = css;
@@ -127,26 +145,38 @@ export function initTimeScrubber({ registry, globe } = {}) {
   let timer = null;
   let allTimeOn = false;          // time axis off → every layer shows all years
 
-  // Compute the UNION of all registered layers' 'year' control ranges,
-  // and whether any *visible* layer is year-aware.
+  // A layer is "time-aware" if it declares a `temporal:{min,max}` extent OR a
+  // 'year' control. Returns its [min,max] data-year range, or null.
+  function rangeOf(e) {
+    const t = e.temporal;
+    if (t && typeof t.min === 'number' && typeof t.max === 'number') return [t.min, t.max];
+    const yc = (e.controls || []).find((c) => c.id === 'year');
+    if (yc && typeof yc.min === 'number' && typeof yc.max === 'number') return [yc.min, yc.max];
+    return null;
+  }
+
+  // The axis domain is the union of the time-aware layers that are CURRENTLY
+  // VISIBLE — so with one layer on, the slider spans exactly that layer's real
+  // data years (e.g. Commodities → 2022–2024) instead of a fixed 1500–2024, and
+  // any visible time-aware layer (incl. Historical Borders, which has no 'year'
+  // slider) raises the scrubber on its own.
   function scan() {
     const entries = (typeof registry.list === 'function' ? registry.list() : []) || [];
     let lo = Infinity;
     let hi = -Infinity;
-    let anyAware = false;       // any registered layer at all
     let anyVisibleAware = false;
     for (const e of entries) {
-      const yc = (e.controls || []).find((c) => c.id === 'year');
-      if (!yc) continue;
-      anyAware = true;
-      if (typeof yc.min === 'number') lo = Math.min(lo, yc.min);
-      if (typeof yc.max === 'number') hi = Math.max(hi, yc.max);
-      if (e.visible) anyVisibleAware = true;
+      if (!e.visible) continue;
+      const r = rangeOf(e);
+      if (!r) continue;
+      anyVisibleAware = true;
+      lo = Math.min(lo, r[0]);
+      hi = Math.max(hi, r[1]);
     }
-    if (!anyAware || !isFinite(lo) || !isFinite(hi)) {
+    if (!anyVisibleAware || !isFinite(lo) || !isFinite(hi)) {
       return { lo: null, hi: null, visible: false };
     }
-    return { lo, hi, visible: anyVisibleAware };
+    return { lo, hi, visible: true };
   }
 
   function setSliderToYear(y) {

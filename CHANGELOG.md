@@ -8,6 +8,167 @@ running).
 
 ---
 
+## 2026-06-27 — remove the colour-theme switcher (build 06-27.t)
+
+Client request: the bone/forest/dusk colour dots (bottom-left) are removed from
+desktop and mobile. `motion.js` `injectThemeSwitcher()` is now a no-op; the app
+stays on the default "bone" palette. `theme.js` keeps the palettes for possible
+future use; the dead `#theme-switcher` CSS is left in place (harmless, no element).
+
+## 2026-06-27 — gate Atrocity ties behind the Genocide passcode (build 06-27.s)
+
+Data-integrity consistency: the **Atrocity section in the Relationships panel** was
+showing the curated genocide data (Holocaust perpetrator/victim ties, etc.) even
+though the Genocide map layer is beta-gated behind a passcode — that data is curated,
+not built from established indices, so it must stay behind the same gate. Now the
+relationships panel hides ALL atrocity ties (section, Sankey strands, legend swatch,
+tie counts, subtitle) until the Genocide layer is unlocked. `relationships-panel.js`:
+`genocideUnlocked()` reads the same `sessionStorage['atlas-beta-unlocked']` the layer
+panel writes; `relGenocide()` returns `[]` when locked; `shownLayers()` drops the
+Atrocity layer from the rendered sections + diagram legend. Verified: France panel
+locked → 0 Atrocity/perpetrator/Holocaust; unlocked → Atrocity section returns. QA 24/24.
+
+## 2026-06-27 — fix: single resilience factor turned the map black (build 06-27.r)
+
+`resilienceMean()` divided by the cluster COUNT (copied from `traumaMean`), but
+resilience has no live-max rescale to undo the 1/count shrink — so weighting only
+one factor (e.g. Democracy) gave value/14 ≈ 6 → the whole globe went near-black.
+Switched it to divide by **Σw** (a true weighted mean): one factor now reads as that
+factor's own value (DEU Democracy 93.1 = green, AFG 23.7 = dark), and any subset of
+factors gives that subset's mean. all-100 is unchanged (Σv/14 either way). Verified:
+Democracy-only → 209 green, 0 black. qa_smoke 24/24.
+
+## 2026-06-27 — custom weighted RESILIENCE surface (build 06-27.q)
+
+The big one this round, on client request: you can now **weight resilience as its own
+surface**, not just as a trauma dampener.
+
+- In Custom weighting, **set every condition (trauma) weight to 0** and the surface
+  flips to a **pure, weighted RESILIENCE map (green)** instead of going blank — exactly
+  what one expects from "I weighted only resilience". The 14 resilience sliders then
+  shape that green map directly (weight each factor in or out, same count-denominator
+  leverage as trauma). `cfct-composite/index.js`: new `resilienceMean()` +
+  `weightedIsResilience()`; `weightedValue()` falls back to weighted resilience when
+  trauma is un-weighted; `paint()`/`activeRamp()` pick the green ramp; `surface.ramp()`
+  exposed; `label()`/`breakdown()` adapt ("Custom resilience (your weights)", factor list).
+- **Legend follows it live** (`legend.js`): in weighted mode the key reads the live
+  `surface.ramp()` and switches between "Custom CFCT" (warm) and "Custom resilience"
+  (green); re-syncs on weight changes (deferred a microtask so it reads fresh state).
+- **Warning + notes updated** (`weighting-panel.js`): the blank-map warning now only
+  fires when **both** trauma and resilience are all 0 (truly nothing to map). The
+  Resilience-tab note now explains the new behaviour (zero the conditions → green
+  resilience surface shaped by these sliders) instead of "Custom weighting always maps
+  trauma".
+
+Verified headless: trauma→0 yields 215 green countries (DEU 77.7), legend "Custom
+resilience", no warning; both→0 yields blank + warning. Desktop qa_smoke 24/24.
+
+## 2026-06-27 — blank-map guard + legend tidy (build 06-27.p)
+
+- **Blank globe in Custom weighting explained** (`weighting-panel.js`): zeroing all
+  condition/trauma weights (e.g. "All → 0" on Meta/Indicators) makes the weighted
+  surface paint nothing — it went silently blank with the stat-rail empty, which
+  read as a bug. Added an inline warning banner in the panel that appears whenever
+  every trauma weight is 0 ("raise at least one cluster… resilience weights only
+  dampen"). Confirmed: warning shows on trauma=0, clears on All → 100. (Not a code
+  regression — both old and new maths return null with no trauma weight; the new
+  slider leverage just made people try it.)
+- **Surface legend labels** (`legend.js`): dropped the "fragile / resilient" end
+  labels under the Resilience key (client preference) — every surface key now shows
+  just the title on top + the 0 / 50 / 100 scale.
+
+## 2026-06-27 — resilience legibility + weighting clarity (build 06-27.o)
+
+- **Resilience ramp redesigned** (`theme.js`): lush green (high) → **dark-grey/near-black**
+  (low), so a fragile country (Afghanistan ≈23) reads near-black instead of a pale
+  tint. (Absent countries stay light bone, so dark-low ≠ no-data.)
+- **Surface legend now follows the active surface** (`legend.js`): the Resilience
+  surface shows a green→dark key labelled *fragile → resilient*; trauma/coverage
+  surfaces keep the warm conditions key. It no longer always says "CFCT surface".
+- **Weighting "Resilience" tab clarified** (`weighting-panel.js`): users read that tab
+  as a resilience *surface* and wondered why the map stayed red. Added an inline note:
+  these sliders only **dampen the trauma surface by ≤20%** — Custom weighting always
+  maps trauma; to map resilience itself, pick **Surface → Resilience**.
+
+## 2026-06-27 — six fixes from client review (build 06-27.n)
+
+Root-caused via a 5-way read-only diagnosis, then fixed by hand. Desktop
+`qa_smoke.sh` 24/24 (one check rewritten to the new commodities contract).
+
+1. **Weighting felt like on/off, not 0–100.** Root cause was maths, not a bug: the
+   weighted surface divided the trauma mean by **Σw**, so the weight *magnitude*
+   cancelled and only crossing exactly 0 changed anything. Fix in
+   `js/layers/cfct-composite/index.js` `traumaMean()`: divide by the **count of
+   present clusters** (weight-independent) instead of Σw. Sliders are now true
+   multipliers with smooth leverage and no 0-discontinuity. The all-100 = default
+   CFCT identity is preserved (qa check 2 still passes); single-cluster selection
+   still fills the ramp (the per-country 1/count cancels in `TEw/TEmaxW`).
+   Simulated: reweighting half the indicators now moves the surface mean |Δ| ≈ 9.5
+   (max 29), 181/238 countries shift >5 pts — vs ≈0 before.
+2. **Time scrubber only worked with an entanglement on; axis always 1500–2024.**
+   The scrubber detected "time-aware" only by a `year` control, which Historical
+   Borders (and slavetrade/commodities) don't have, and built its domain from
+   *all registered* layers. Added a declarative `temporal:{min,max}` on those
+   three layers, exposed it via the registry, and rewrote `time-scrubber.js`
+   `scan()` to (a) treat `temporal` OR a `year` control as time-aware, and (b)
+   size the axis to the **currently visible** layers only. Now Historical Borders
+   raises the scrubber alone (1400–2010), and the x-axis matches real data per
+   layer (Commodities 2022–2024, Slave Voyages 1514–1866).
+3. **Resilience invisible in the country details.** The drawer was hard-wired to
+   the 8 trauma clusters and never rendered the 14 `rf_*` resilience factors. Added
+   a **Resilience Factors** section to the Country Reading (`country-drawer.js`):
+   green bars, the aggregate score in the header, per-factor ⓘ (sources from
+   `indicator-docs.json`), and explicit **“no data”** rows (never a painted 0) for
+   factors absent in a country. Also fixed `surface.breakdown()` so the hover
+   tooltip lists factors when the Resilience surface is selected.
+4. **Commodities drew lines when a country was pinned.** `showArcs` was forced true
+   on pin (`|| !!pinned`). Removed it (`entanglement-commodities/index.js`): the
+   layer stays particles-only by default even when pinned; arcs are strictly
+   opt-in via the existing Display control. (qa check updated to assert this.)
+5. **Overseas territories streaked nonsense lines in 2D.** Classic antimeridian
+   wrap in the shared `js/viz/arc-renderer.js`: a great circle crossing ±180° was
+   joined edge-to-edge into a straight line across the whole flat map (France→
+   Wallis, USA→Guam, NZ→Tokelau/Niue/Cook Is., N. Marianas). Added a flat-mode
+   split when the projected x jumps more than half the map width — each piece now
+   runs to its own edge. Fixes overseas, and latently colonies/migration too.
+
+## 2026-06-27 — mobile / touch pass (build 06-27.m)
+
+The atlas is now usable + clean on phones, with the **desktop/Mac experience
+unchanged** (every rule is gated behind `@media (max-width:640px)`; desktop
+`qa_smoke.sh` still 24/24). Built as a 5-way parallel pass (disjoint file sets,
+one shared layout contract), then reconciled by hand.
+
+**Navigation — bottom sheet + FAB (`js/ui/mobile-shell.js`, new).**
+- On phones the left layer rail becomes a **bottom sheet** reached via a floating
+  **☰ Layers** button (bottom-centre). Tapping dims the globe with a scrim and
+  slides the sheet up; close via the FAB, scrim tap, **drag-down on the grip**, or
+  Esc. Drag-to-dismiss uses Pointer Events from a 28px top grip zone (so the
+  sheet's own scroll is never hijacked) with fling detection + snap-back.
+- `#layers` re-styled as the sheet in `layer-panel.js` (≤640px): fixed bottom,
+  `translateY(101%)` → `.sheet-open`, 82dvh, rounded top, grip bar, FAB-clearance
+  padding. Desktop rail untouched above 640px.
+
+**Touch gestures (`js/core/projection.js`).** Two-finger **pinch-to-zoom** (drag-
+rotate is suppressed mid-pinch); `touch-action:none` on the svg stops page
+rubber-banding. Mouse wheel/drag unchanged. The +/- zoom buttons are hidden on
+mobile (pinch replaces them).
+
+**Full-screen panels (≤640px).** Country reading, Relationships, Methodology, and
+Weighting go true full-screen (`100dvh`, safe-area padding, 44px close targets,
+momentum scroll). Chrome respects `env(safe-area-inset-*)` (viewport now
+`viewport-fit=cover`) and `100dvh` to dodge the iOS address-bar jump.
+
+**Floating chrome reflow.** A single non-overlapping **top-left stack** on a 44px
+rhythm below a one-line brand (build-stamp hidden on phones): Weighting · Search
+(collapses to a 40px icon) · Feedback · CFCT surface ramp · legend (collapsible).
+Bottom edge: theme dots (left) · Layers FAB (centre) · 2D-3D + play (right). Time
+scrubber lifts above the FAB. `#bottom-hint` hidden.
+
+**Verified:** desktop `qa_smoke.sh` 24/24; phone-viewport screenshots of the home
+map, open sheet, full-screen country reading, and relationships panel. iPad is
+intentionally left on the desktop layout pending Thomas's mobile/iPad call.
+
 ## 2026-06-22 — data integrity, intro, small islands, beta gate (build 06-22.a)
 
 A large session. All verified by `qa_smoke.sh` (24/24).

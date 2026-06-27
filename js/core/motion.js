@@ -90,7 +90,12 @@ export function pulseClass(el, cls, ms = MOTION.duration.slow) {
 }
 
 // ── theme switcher (injected; no markup added to index.html) ───
+// DISABLED (client request 2026-06-27): the bone/forest/dusk colour dots are
+// removed from both desktop and mobile. The app stays on DEFAULT_THEME (bone);
+// theme.js keeps the palettes for possible future use, but no picker is shown.
 function injectThemeSwitcher() {
+  return;   // no-op: do not inject the colour-theme switcher
+  /* eslint-disable no-unreachable */
   if (document.getElementById('theme-switcher')) return;
   const host = document.getElementById('chrome') || document.getElementById('stage') || document.body;
   const el = document.createElement('div');

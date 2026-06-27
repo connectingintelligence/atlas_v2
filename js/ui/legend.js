@@ -43,7 +43,27 @@ function injectStyles() {
     letter-spacing:.02em; }
   #atlas-legend .lg-width { display:inline-flex; align-items:center; gap:5px; margin-top:4px; }
   #atlas-legend .lg-width svg { display:block; }
-  @media (max-width:900px){ #atlas-legend { bottom:auto; top:64px; } }`;
+  @media (max-width:900px){ #atlas-legend { bottom:auto; top:64px; } }
+
+  /* ── phones: dock to the LEFT column (clear of the top-right country-chip)
+     and make the key collapsible (default collapsed) so it stays out of the
+     way. Tap the title to expand/collapse. ── */
+  @media (max-width:640px){
+    #atlas-legend { right:auto; bottom:auto; left:12px; width:auto; max-width:74vw;
+      top: calc(env(safe-area-inset-top) + 220px); }
+    #atlas-legend .lg-title { display:flex; align-items:center; justify-content:space-between;
+      cursor:pointer; margin-bottom:0; min-height:40px; padding:6px 0; }
+    #atlas-legend .lg-title::after { content:'\\25BE'; font-size:11px; margin-left:12px;
+      transition:transform .2s ease; }
+    #atlas-legend.expanded .lg-title { margin-bottom:9px; }
+    #atlas-legend.expanded .lg-title::after { transform:rotate(180deg); }
+    #atlas-legend .lg-row { display:none; }
+    #atlas-legend.expanded .lg-row { display:block; }
+    #atlas-legend.expanded { max-height:46vh; overflow-y:auto; }
+    /* surface ramp (inline-styled) tucks into the same left column, above the legend */
+    #surface-legend { left:12px !important; bottom:auto !important; width:150px !important;
+      top: calc(env(safe-area-inset-top) + 176px) !important; }
+  }`;
   const s = document.createElement('style');
   s.id = 'atlas-legend-css'; s.textContent = css;
   document.head.appendChild(s);
@@ -164,27 +184,61 @@ export function initLegend({ registry, globe } = {}) {
   panel.setAttribute('aria-label', 'Layer legend');
   document.body.appendChild(panel);
 
+  // Mobile collapse: tap the title to expand/collapse. The 'expanded' class lives
+  // on the panel element (not its rebuilt innerHTML), so it survives re-renders.
+  // No effect on desktop — the collapse CSS is gated behind @media(max-width:640px).
+  panel.addEventListener('click', (ev) => {
+    if (ev.target.closest('.lg-title')) panel.classList.toggle('expanded');
+  });
+
   // ── choropleth ramp legend (bottom-left, above the Weighting button) ──
-  // The surface had no colour key at all; without one the orange shades are
-  // just mood. Shows whenever the CFCT surface is on.
+  // The surface had no colour key at all; without one the shades are just mood.
+  // Shows whenever the CFCT surface is on, and FOLLOWS the selected surface:
+  // the Resilience surface shows a green→dark key (green = more resilient), every
+  // trauma/coverage surface shows the warm conditions key.
   const ramp = document.createElement('aside');
   ramp.id = 'surface-legend';
   ramp.setAttribute('aria-label', 'Surface colour scale');
   ramp.style.cssText = `position:fixed; left:28px; bottom:64px; z-index:55; width:170px;
     background:var(--panel-bg, rgba(241,235,225,.92)); border:1px solid var(--panel-border, #cfc4b2);
     border-radius:8px; padding:9px 12px 8px; backdrop-filter:blur(10px); display:none;`;
-  ramp.innerHTML = `
-    <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.14em;
-      text-transform:uppercase;color:var(--ink-faint,#8a8276);margin-bottom:6px;">CFCT surface</div>
-    <div style="height:8px;border-radius:4px;background:${legendGradient('conditions')};"></div>
-    <div style="display:flex;justify-content:space-between;font-family:'JetBrains Mono',monospace;
-      font-size:9px;color:var(--ink-dim,#6b6358);margin-top:3px;"><span>0</span><span>50</span><span>100</span></div>`;
   document.body.appendChild(ramp);
+  // mode → { title, ramp, lowLabel, highLabel } for the key
+  const SURFACE_KEY = {
+    cti: { title: 'CFCT surface', ramp: 'conditions' },
+    weighted: { title: 'Custom CFCT (your weights)', ramp: 'conditions' },
+    te: { title: 'Trauma exposure', ramp: 'conditions' },
+    resilience: { title: 'Resilience', ramp: 'resilience' },
+    coverage: { title: 'Data coverage', ramp: 'conditions' },
+  };
   function syncRamp() {
-    const cfctOn = registry.list().some((e) => e.id === 'cfct-composite' && e.visible);
-    ramp.style.display = cfctOn ? 'block' : 'none';
+    const cfct = registry.list().find((e) => e.id === 'cfct-composite');
+    if (!cfct || !cfct.visible) { ramp.style.display = 'none'; return; }
+    const mode = (cfct.controlValues && cfct.controlValues.mode) || 'cti';
+    let key = SURFACE_KEY[mode]
+      || (mode.startsWith('mc:') ? { title: 'Condition cluster', ramp: 'conditions' } : SURFACE_KEY.cti);
+    // weighted mode can map trauma OR resilience depending on the weights — ask
+    // the live surface which ramp it's actually painting so the key matches.
+    if (mode === 'weighted') {
+      const r = window.atlas && window.atlas.surface && window.atlas.surface.ramp
+        ? window.atlas.surface.ramp() : 'conditions';
+      key = r === 'resilience'
+        ? { title: 'Custom resilience (your weights)', ramp: 'resilience' }
+        : { title: 'Custom CFCT (your weights)', ramp: 'conditions' };
+    }
+    ramp.innerHTML = `
+      <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.14em;
+        text-transform:uppercase;color:var(--ink-faint,#8a8276);margin-bottom:6px;">${key.title}</div>
+      <div style="height:8px;border-radius:4px;background:${legendGradient(key.ramp)};"></div>
+      <div style="display:flex;justify-content:space-between;font-family:'JetBrains Mono',monospace;
+        font-size:9px;color:var(--ink-dim,#6b6358);margin-top:3px;"><span>0</span><span>50</span><span>100</span></div>`;
+    ramp.style.display = 'block';
   }
   syncRamp();
+  // weight changes don't fire a registry change, so re-sync the key on them too.
+  // Defer so the cfct layer's own atlas:weights handler (which updates the weight
+  // state surface.ramp() reads) has already run — otherwise we'd read stale state.
+  document.addEventListener('atlas:weights', () => queueMicrotask(syncRamp));
 
   function render(list) {
     const entries = Array.isArray(list) ? list : registry.list();

@@ -53,6 +53,10 @@ function injectStyles() {
   .wt-group-h { font-family:'JetBrains Mono',monospace; font-size:9.5px; letter-spacing:.13em; text-transform:uppercase;
     color:var(--ink-faint); margin:16px 0 7px; padding-bottom:4px; border-bottom:1px solid var(--rule); }
   .wt-group-h:first-child { margin-top:4px; }
+  #wt-warn { margin:0 0 4px; padding:10px 14px; font-size:12px; line-height:1.5;
+    color:var(--ink); background:color-mix(in srgb, var(--accent) 12%, var(--bg));
+    border-top:1px solid var(--panel-border); border-bottom:1px solid var(--panel-border); }
+  #wt-warn[hidden] { display:none; }
   .wt-row { margin-bottom:11px; }
   .wt-row-top { display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:3px; }
   .wt-name { font-size:12.5px; color:var(--ink-dim); flex:1; }
@@ -76,7 +80,32 @@ function injectStyles() {
   #wt-foot .wt-btn { background:transparent; border:1px solid var(--rule); color:var(--ink-dim); font-family:inherit;
     font-size:10px; padding:5px 11px; border-radius:3px; cursor:pointer; transition:color .18s,border-color .18s; }
   #wt-foot .wt-btn:hover { color:var(--ink); border-color:var(--ink-faint); }
-  @media (max-width:900px){ #wt-panel{ width:88vw; } }`;
+  @media (max-width:900px){ #wt-panel{ width:88vw; } }
+
+  /* ── Phone pass (Agent F): full-screen sheet + tappable controls ≤640px ── */
+  @media (max-width:640px){
+    /* top-left tool stack (shared 44px rhythm, below the one-line brand title):
+       Weighting 44 · Search 88 · Feedback 132 · surface ramp 176 · legend 220 */
+    #wt-toggle { left:calc(env(safe-area-inset-left) + 12px);
+      top:calc(env(safe-area-inset-top) + 44px); bottom:auto; padding:11px 15px; }
+    #wt-panel { left:0; right:0; top:0; bottom:auto; width:100%; max-width:100%;
+      height:100dvh; max-height:100dvh; border:none; border-radius:0;
+      transform:translateY(100%); }
+    #wt-panel.open { transform:translateY(0); }
+    #wt-head { padding:calc(env(safe-area-inset-top) + 16px)
+      calc(env(safe-area-inset-right) + 18px) 12px calc(env(safe-area-inset-left) + 18px); }
+    #wt-close { width:44px; height:44px; font-size:21px; top:calc(env(safe-area-inset-top) + 6px);
+      right:calc(env(safe-area-inset-right) + 8px); }
+    #wt-tabs button { min-height:42px; font-size:12.5px; }
+    #wt-body { padding-left:calc(env(safe-area-inset-left) + 18px);
+      padding-right:calc(env(safe-area-inset-right) + 18px); }
+    .wt-row { margin-bottom:16px; }
+    .wt-row input[type=range] { height:40px; touch-action:none; }
+    .wt-i { width:40px; height:40px; font-size:14px; }
+    #wt-foot { padding:12px calc(env(safe-area-inset-right) + 18px)
+      calc(env(safe-area-inset-bottom) + 12px) calc(env(safe-area-inset-left) + 18px); }
+    #wt-foot .wt-btn { min-height:40px; padding:8px 14px; font-size:11px; }
+  }`;
   const s = document.createElement('style');
   s.id = 'atlas-weighting-css'; s.textContent = css;
   document.head.appendChild(s);
@@ -118,6 +147,9 @@ export async function initWeightingPanel({ registry, globe } = {}) {
         <button data-level="resilience">Resilience</button>
       </div>
     </div>
+    <div id="wt-warn" hidden>⚠ <b>Every weight is 0</b>, so the map has nothing to show.
+      Raise at least one <b>condition cluster</b> (warm trauma map) or one
+      <b>resilience factor</b> (green resilience map).</div>
     <div id="wt-body"></div>
     <div id="wt-foot"><span id="wt-hint">drag to re-weight</span>
       <span class="wt-btns">
@@ -167,8 +199,17 @@ export async function initWeightingPanel({ registry, globe } = {}) {
     if (state.level === 'meta') {
       body.innerHTML = metaList.map((m) => docRow(m.key, m)).join('');
     } else if (state.level === 'resilience') {
-      // resilience factors enter the weighted surface as its dampener term
-      body.innerHTML = '<div class="wt-group-h">Resilience factors · dampen trauma by up to 20%</div>'
+      // resilience factors enter the weighted surface as its dampener term.
+      // NOTE: the Custom-weighting surface is always TRAUMA-based (warm palette);
+      // these sliders only soften it by ≤20%. Users kept reading this tab as a
+      // "resilience surface" and wondering why the map stayed red — so spell it out
+      // and point them to Surface → Resilience for an actual green resilience map.
+      body.innerHTML = '<div class="wt-group-h">Resilience factors</div>'
+        + '<div style="font-size:11.5px;line-height:1.5;color:var(--ink-dim);background:var(--chip-bg);'
+        + 'border-left:2px solid var(--accent);border-radius:2px;padding:8px 10px;margin:0 0 12px;">'
+        + 'While any condition (trauma) weight is up, these factors <b>dampen the trauma surface</b> (by up to 20%). '
+        + 'Set <b>every condition weight to 0</b> (Meta-clusters → All → 0) and the map becomes a <b>green resilience '
+        + 'surface</b> that these sliders shape directly — weight each factor in or out.</div>'
         + Object.entries(resilience).map(([k, info]) => docRow(k, info)).join('');
     } else {
       // group trauma indicators under their meta-cluster
@@ -210,7 +251,18 @@ export async function initWeightingPanel({ registry, globe } = {}) {
   const parents = {};
   for (const m of metaList) for (const k of m.indicatorKeys || []) parents[k] = m.key;
 
+  // Warn only when there is genuinely NOTHING to map — every trauma weight AND
+  // every resilience weight at 0. (Trauma 0 + resilience up now maps a pure
+  // resilience surface, so that's no longer a blank/warning case.)
+  const warnEl = panel.querySelector('#wt-warn');
+  function updateWarn() {
+    const traumaAllZero = Object.values(state.indicators).every((v) => !v || v <= 0);
+    const resilAllZero = Object.values(state.resilience).every((v) => !v || v <= 0);
+    warnEl.hidden = !(traumaAllZero && resilAllZero);
+  }
+
   function emit() {
+    updateWarn();
     // Send ALL THREE tab maps every time: the weighted surface is a full
     // CFCT recomputation (trauma weights + resilience dampener together),
     // not a per-tab flat mean — see cfct-composite weightedValue().

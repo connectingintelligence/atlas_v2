@@ -61,33 +61,67 @@ CFCT = (CD / CD_max × 95) × (1 − 0.20 × R / 100)
 > entanglement layer**, which is the only place the project's curated event list
 > is used. (Decision 2026-06-22: keep the composite to citable indices only.)
 
-## Custom weighting (fixed & redesigned 2026-06-11)
+## Custom weighting (redesigned 2026-06-11; weighting maths fixed 2026-06-27)
 
 The **Custom weighting** surface recomputes the full CFCT formula client-side
 with your slider weights — it is not a flat mean:
 
 ```
-TEw    = Σ(wᵢ · clusterᵢ) / Σwᵢ      wᵢ = the indicator's slider % (ONE flat
-                                      weight vector over the 28 indicators)
-Rw     = Σ(wⱼ · factorⱼ) / Σwⱼ        wⱼ = resilience slider %
-TEmaxW = max TEw over all scored countries UNDER THE CURRENT WEIGHTS
+TEw    = Σ(wᵢ · clusterᵢ) / N_present     wᵢ = indicator slider %  (ONE flat
+                                          weight vector over the 28 indicators;
+                                          N_present = how many of those clusters
+                                          the country actually has — NOT Σwᵢ)
+Rw     = Σ(wⱼ · factorⱼ) / Σwⱼ            wⱼ = resilience slider %  (dampener)
+TEmaxW = max TEw over WELL-COVERED countries UNDER THE CURRENT WEIGHTS
 CFCTw  = clip( (TEw / TEmaxW × 95) × (1 − 0.20 × Rw / 100), 0, 100 )
 ```
 
+- **Trauma divides by the cluster COUNT, not by Σw** (changed 2026-06-27). A
+  weight-*normalised* mean (÷Σw) is scale-invariant — multiplying every slider
+  by the same factor leaves the surface unchanged, and even relative shifts
+  barely moved it, so the sliders felt like an on/off switch. Dividing by the
+  weight-independent count makes them true multipliers: relative re-weighting
+  now expresses the full spread between countries, with no jump at a slider's 0.
 - **One flat weight vector.** The meta-cluster tab's sliders are *group
-  handles*: moving one sets all its member indicators to that value (and the
-  meta slider displays the group's mean). There is no hidden meta × indicator
-  multiplication — the 28 indicator weights are the single source of truth.
+  handles*: moving one sets all its member indicators to that value. There is
+  no hidden meta × indicator multiplication — the 28 indicator weights are the
+  single source of truth.
 - **The ramp stretches over your selection.** `TEmaxW` is recomputed from the
-  current weights, so isolating a single indicator reads on the full colour
-  range: pick *Political Terror* alone and the worst countries (Afghanistan,
-  Eritrea, North Korea) sit deep red at ~86–90 (95 × their resilience
-  dampener), with the full spread below — instead of half the world clipping
-  at 100 against the composite's much-lower maximum.
+  current weights, so isolating a single cluster reads on the full colour range
+  (its worst countries deep red, the spread below) instead of clipping against
+  the composite's much-lower maximum.
 - **Every slider at 100 reproduces the default CFCT exactly** (verified:
-  painted surfaces match within ±1 RGB from 1-decimal rounding).
-- Resilience sliders control the dampener (≤20%); zero them to see raw
-  weighted trauma exposure.
+  painted surfaces match within ±1 RGB from 1-decimal rounding). At all-100,
+  ÷N_present and ÷Σw are identical, so this is unchanged by the 06-27 fix.
+
+### Weights are a MIXING RATIO, not an intensity (important)
+
+The slider value matters only **relative to the other active factors**, never on
+its own. With exactly one factor weighted, its magnitude **cancels** and you see
+that factor's own map regardless of the number:
+
+- *Trauma:* a lone cluster's weight `w` cancels in `TEw / TEmaxW` (both scale by
+  `w`) → setting *Political Terror* alone to 23 or to 80 paints the identical map.
+- *Resilience:* a lone factor's weight cancels in `Σ(w·v)/Σw = v` → *Press
+  Freedom* alone at 23 or 80 is the same Press-Freedom map.
+
+To change a map you must change the **ratio** between two or more active factors
+(e.g. Press Freedom 80 + Peace 20 vs 20 + 80). This behaviour is **identical for
+trauma and resilience** — the number is a blend weight, not a brightness dial.
+
+### Custom RESILIENCE surface (added 2026-06-27)
+
+Set **every condition (trauma) weight to 0** (Meta-clusters → All → 0) and the
+Custom surface flips from trauma (warm ramp) to a **pure, weighted RESILIENCE
+map (green ramp)**: `value = Σ(wⱼ · factorⱼ) / Σwⱼ` over the 14 resilience
+factors. The resilience sliders then shape it directly — weight any factor in or
+out. (Resilience uses ÷Σw, **not** the count denominator: there is no live-max
+rescale on this surface to undo a 1/14 shrink, so weighting one factor must read
+as that factor's own value, e.g. Germany's Democracy ≈ 93 = green, not ≈ 6 =
+black.) While *any* trauma weight is up, the resilience sliders instead act only
+as the ≤20 % dampener `Rw` above. If every trauma **and** every resilience weight
+is 0, there is nothing to map and the panel says so.
+
 - Countries the pipeline withholds for thin coverage (<5 indicators) stay
   *absent* under any weighting.
 - Before 2026-06-11 this surface was a flat weighted mean of the visible tab's

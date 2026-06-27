@@ -45,32 +45,71 @@ function labelFor(key) {
 // surface is a faithful CLIENT-SIDE CFCT RECOMPUTATION mirroring
 // pipeline/compute_cti.py, with one deliberate generalisation:
 //
-//   TEw    = weight-normalised mean of tc_*       (indicator sliders)
+//   TEw    = Σ(w·tc) / (count of tc present)      (indicator sliders)
 //   Rw     = weight-normalised mean of rf_*       (resilience sliders)
 //   TEmaxW = max TEw over all scored countries UNDER THE CURRENT WEIGHTS
 //   value  = clip( (TEw / TEmaxW × 95) × (1 − 0.20 × Rw/100), 0, 100 )
 //
-// Rescaling by the SELECTION's own max (not the composite's) makes any
-// subset read on the full ramp: pick "political terror" alone and the
-// worst country (Afghanistan, 98.97) goes deep red at ~95×dampener,
-// instead of clipping half the world at 100. With every slider at 100,
-// TEmaxW equals the pipeline's te_max, so the default CFCT surface is
-// reproduced exactly (verified: painted fills match within ±1 RGB).
+// IMPORTANT — why TEw divides by the COUNT of present clusters, not by Σw:
+// a weight-NORMALISED mean (÷Σw) is scale-invariant — multiplying all sliders
+// by any factor leaves TEw unchanged, and even relative shifts move it only a
+// point or two, so the sliders felt like an on/off switch (only crossing 0 did
+// anything visible). Dividing by the weight-INDEPENDENT count makes the sliders
+// true multipliers: relative re-weighting now expresses the full spread between
+// countries, and there is no discontinuity at w=0 (a cluster fades out smoothly
+// rather than dropping out of the denominator).
+//
+// Rescaling by the SELECTION's own max (not the composite's) still makes any
+// subset read on the full ramp: pick one cluster alone and the worst country
+// goes deep red, because the per-country 1/count cancels in TEw/TEmaxW. With
+// every slider at 100, TEw is the plain cluster mean and TEmaxW equals the
+// pipeline's te_max, so the default CFCT surface is reproduced exactly
+// (verified: painted fills match within ±1 RGB — qa_smoke check 2).
 const weighting = { level: 'meta', all: { meta: {}, indicators: {}, resilience: {} } };
 
 const wOf = (map, k) => (map && map[k] != null ? map[k] : 100);
 
-// weight-normalised trauma mean for one country under the current weights
+// Weighted trauma mean under the current weights. Denominator = COUNT of
+// present clusters (weight-independent), NOT Σw — see the header note: this is
+// what gives the sliders real, smooth leverage instead of an on/off feel.
+// Returns null only when NO trauma cluster carries any weight (→ country absent).
 function traumaMean(d, tcKeys) {
-  let num = 0, den = 0;
+  let num = 0, n = 0, any = false;
   for (const k of tcKeys) {
     const v = d[k];
     if (v == null || isNaN(v)) continue;
+    n += 1;                                   // present clusters (independent of weight)
     const w = wOf(weighting.all.indicators, k) / 100;
+    if (w > 0) { num += w * v; any = true; }
+  }
+  return (n > 0 && any) ? num / n : null;
+}
+
+// Weighted resilience mean — used when all trauma weight is 0, so the Custom
+// surface maps pure (weighted) RESILIENCE (0–100, green). This divides by Σw
+// (a true weighted MEAN), NOT by the cluster count like traumaMean: there is no
+// live-max rescale to undo a 1/count shrink here, so weighting only "Democracy"
+// must read as Democracy's own value (≈93, green), not value/14 (≈6, black).
+// Picking a different subset of factors gives a different mean — that's the
+// leverage. Null when no resilience factor carries any weight.
+function resilienceMean(d, rfKeys) {
+  let num = 0, den = 0;
+  for (const k of rfKeys) {
+    const v = d[k];
+    if (v == null || isNaN(v)) continue;
+    const w = wOf(weighting.all.resilience, k) / 100;
     if (w <= 0) continue;
     num += w * v; den += w;
   }
   return den > 0 ? num / den : null;
+}
+
+// True when every trauma weight is 0 but at least one resilience weight is up:
+// the weighted surface becomes pure resilience (green) rather than a blank globe.
+function weightedIsResilience(tcKeys, rfKeys) {
+  const traumaZero = tcKeys.every((k) => wOf(weighting.all.indicators, k) <= 0);
+  const anyResil = rfKeys.some((k) => wOf(weighting.all.resilience, k) > 0);
+  return traumaZero && anyResil;
 }
 
 function weightedValue(d, tcKeys, rfKeys, teMaxW) {
@@ -79,7 +118,12 @@ function weightedValue(d, tcKeys, rfKeys, teMaxW) {
   // here too, so thin-coverage countries stay "absent" under any weighting
   if (d.cti == null) return null;
   const TEw = traumaMean(d, tcKeys);
-  if (TEw == null) return null;              // every trauma weight at 0
+  if (TEw == null) {
+    // No trauma weight anywhere → show the weighted RESILIENCE surface instead.
+    // (Zeroing trauma + weighting only resilience now yields a pure resilience
+    // map, which is what one intuitively expects.) Null if no resilience either.
+    return resilienceMean(d, rfKeys);
+  }
   let rnum = 0, rden = 0;
   for (const k of rfKeys) {
     const v = d[k];
@@ -148,11 +192,17 @@ export default {
     }
     let teMaxW = computeTeMaxW();
 
+    // The active colour ramp: green for the pure-resilience surface AND for the
+    // weighted surface once trauma is fully un-weighted (→ it maps resilience).
+    function activeRamp() {
+      const mode = ctx.getControl('mode') || 'cti';
+      if (mode === 'resilience') return 'resilience';
+      if (mode === 'weighted' && weightedIsResilience(tcKeys, rfKeys)) return 'resilience';
+      return 'conditions';
+    }
     function paint() {
       const mode = ctx.getControl('mode') || 'cti';
-      // pure-resilience surface uses the green ramp; the weighted surface is
-      // always a full CFCT recomputation → conditions ramp like the default
-      const ramp = mode === 'resilience' ? 'resilience' : 'conditions';
+      const ramp = activeRamp();
       ctx.setPaint((iso3) => {
         const v = valueFor(data[iso3], mode, teMax, tcKeys, rfKeys, teMaxW);
         return ctx.colorFor(v, ramp);
@@ -189,9 +239,14 @@ export default {
       label() {
         const m = ctx.getControl('mode') || 'cti';
         if (m.startsWith('mc:')) return META_LABEL[m.slice(3)] || 'Meta-cluster';
-        if (m === 'weighted') return 'Custom CFCT (your weights)';
+        if (m === 'weighted') {
+          return weightedIsResilience(tcKeys, rfKeys)
+            ? 'Custom resilience (your weights)' : 'Custom CFCT (your weights)';
+        }
         return MODE_LABEL[m] || 'Surface';
       },
+      // 'resilience' | 'conditions' — the legend reads this to colour its key
+      ramp() { return activeRamp(); },
       unit() { return (ctx.getControl('mode') || 'cti') === 'coverage' ? '% covered' : '/ 100'; },
       // surfaced in the hover tooltip so thin-coverage caveats are visible
       // at the moment of reading, not two clicks away in the drawer
@@ -204,9 +259,28 @@ export default {
       // weighted mode: the recomputation's two terms + the heaviest trauma
       // contributors (weight × score), so the tooltip explains the number
       breakdown(iso3) {
-        if ((ctx.getControl('mode') || 'cti') !== 'weighted') return [];
+        const mode = ctx.getControl('mode') || 'cti';
         const d = data[iso3];
         if (!d) return [];
+        // Resilience surface: list the present resilience factors (highest first)
+        // so the tooltip explains the green score; absent factors simply omitted
+        // (the drawer's Resilience section shows them as "no data").
+        // Pure resilience surface OR weighted-with-only-resilience: list the
+        // weighted factors that are actually contributing (highest first).
+        if (mode === 'resilience' || (mode === 'weighted' && weightedIsResilience(tcKeys, rfKeys))) {
+          const useW = mode === 'weighted';
+          return rfKeys
+            .map((k) => {
+              const v = d[k];
+              if (v == null || isNaN(v)) return null;
+              if (useW && wOf(weighting.all.resilience, k) <= 0) return null;
+              return { label: labelFor(k), value: v };
+            })
+            .filter(Boolean)
+            .sort((a, b) => b.value - a.value)
+            .slice(0, 8);
+        }
+        if (mode !== 'weighted') return [];
         let rnum = 0, rden = 0;
         for (const k of rfKeys) {
           const v = d[k];

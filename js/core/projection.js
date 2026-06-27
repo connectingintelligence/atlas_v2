@@ -201,15 +201,50 @@ export function createGlobe(container, opts = {}) {
     render();
   }
 
-  // ── drag rotate ──
+  // ── drag rotate + pinch zoom ──
+  // touch-action:none keeps the browser from hijacking touches for page
+  // pan / pinch-to-zoom / rubber-band scroll while the user works the globe.
+  // It is inert on desktop (mouse) input.
+  svg.style('touch-action', 'none');
+
   let dragStart = null, rotStart = null;
+  let pinchStart = null;   // { dist, zoom } while a 2-finger pinch is active
+
+  function pinchDistance(touches) {
+    const dx = touches[0].clientX - touches[1].clientX;
+    const dy = touches[0].clientY - touches[1].clientY;
+    return Math.hypot(dx, dy);
+  }
+
   svg.on('mousedown.drag touchstart.drag', (ev) => {
+    // Two fingers down → begin a pinch-zoom gesture and cancel any single-finger
+    // drag-rotate that may have started, so the globe doesn't rotate mid-pinch.
+    if (ev.touches && ev.touches.length === 2) {
+      ev.preventDefault();
+      pinchStart = { dist: pinchDistance(ev.touches), zoom: state.zoom };
+      dragStart = null;
+      if (state.autoRotate) {
+        state.autoRotate = false;
+        if (opts.onAutoRotateChange) opts.onAutoRotateChange(false);
+      }
+      return;
+    }
     state.autoRotate = false;
     if (opts.onAutoRotateChange) opts.onAutoRotateChange(false);
     dragStart = d3.pointer(ev, svg.node());
     rotStart = state.rotation.slice();
-  });
+  }, { passive: false });
+
   d3.select(window).on('mousemove.drag touchmove.drag', (ev) => {
+    // Pinch takes priority; never rotate while 2+ fingers are down.
+    if (ev.touches && ev.touches.length >= 2) {
+      if (pinchStart) {
+        ev.preventDefault();
+        const ratio = pinchDistance(ev.touches) / pinchStart.dist;
+        setZoom(pinchStart.zoom * ratio, false);
+      }
+      return;
+    }
     if (!dragStart) return;
     const p = d3.pointer(ev, svg.node());
     const k = 0.33 * (1 - state.proj * 0.4);
@@ -219,8 +254,14 @@ export function createGlobe(container, opts = {}) {
       rotStart[2],
     ];
     render();
+  }, { passive: false });
+
+  d3.select(window).on('mouseup.drag touchend.drag', (ev) => {
+    // End the pinch once fewer than 2 fingers remain; end the drag once all
+    // fingers are up (mouseup has no .touches, so both clear).
+    if (!ev.touches || ev.touches.length < 2) pinchStart = null;
+    if (!ev.touches || ev.touches.length === 0) dragStart = null;
   });
-  d3.select(window).on('mouseup.drag touchend.drag', () => { dragStart = null; });
 
   // ── wheel zoom ──
   svg.on('wheel.zoom', (ev) => {

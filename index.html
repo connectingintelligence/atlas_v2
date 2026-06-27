@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 <title>Atlas v2 — Conditions for Collective Trauma</title>
 
 <!-- Libraries + fonts vendored locally in vendor/ — no internet/CDN required. -->
@@ -280,6 +280,51 @@
     #methodology { width:92vw; }
     #theme-switcher { bottom:auto; top:20px; right:28px; left:auto; }
   }
+
+  /* ─── PHONE (≤640px) — mobile pass, build 06-27.m ──────────────
+     New rules only; nothing here touches the desktop/tablet cascade. The
+     #layers rail becomes a bottom sheet (sheet styling lives in layer-panel.js;
+     here we just re-show it and let the sheet transform take over). */
+  @media (max-width:640px) {
+    /* full-bleed globe under the notch (100dvh dodges the iOS address-bar jump) */
+    #stage, #globe-wrap { height:100dvh; }
+
+    /* #statrail stays hidden; #layers is re-shown as a sheet (it was display:none
+       via the 900px rule above — that rule is left untouched). */
+    #statrail { display:none; }
+    #layers { display:block; }
+
+    #bottom-hint { display:none; }
+
+    /* brand title trimmed so it fits a narrow bar; the dev build-stamp is hidden
+       on phones (it's a stale-tab aid for desktop) so the one-line title leaves
+       room for the left tool stack (Weighting · Search · Feedback · legend). */
+    #topbar { top:calc(env(safe-area-inset-top) + 12px); left:calc(env(safe-area-inset-left) + 14px); }
+    #topbar .brand-title { font-size:14px; }
+    #topbar .brand-sub { display:none; }
+
+    /* theme switcher → bottom-left (override the 900px top-right placement) */
+    #theme-switcher { top:auto; bottom:calc(env(safe-area-inset-bottom) + 16px);
+      left:calc(env(safe-area-inset-left) + 12px); right:auto; padding:4px 6px; }
+    #theme-switcher .ts-dot { width:18px; height:18px; }
+
+    /* globe controls → bottom-right; pinch-zoom replaces the +/- buttons */
+    #globe-controls { bottom:calc(env(safe-area-inset-bottom) + 16px);
+      right:calc(env(safe-area-inset-right) + 12px); }
+    #globe-controls .gc-btn { height:40px; min-width:40px; }
+    /* specificity must beat `#globe-controls .gc-btn` (1-1-0) above, else the
+       desktop display:inline-flex re-shows them — hence the #globe-controls prefix */
+    #globe-controls #gc-zin, #globe-controls #gc-zout { display:none; }
+    /* drop the now-trailing divider before the (hidden) zoom group */
+    #globe-controls .gc-divider:last-of-type { display:none; }
+
+    /* readable intro on a narrow screen */
+    .intro-stage { padding:28px 22px; }
+    .intro-h1 { font-size:30px; }
+    .intro-sub { font-size:16px; }
+    .intro-body { font-size:14.5px; }
+    .intro-stats { gap:22px; }
+  }
 </style>
 </head>
 <body data-theme="bone">
@@ -346,7 +391,7 @@
       <div class="brand-title">Conditions for Collective Trauma</div>
       <!-- build stamp: bump when shipping UI fixes so a stale tab is instantly
            recognisable (user-reported bugs kept tracing back to old tabs) -->
-      <div class="brand-sub">Atlas · v2 · 2026 · build 06-22.a</div>
+      <div class="brand-sub">Atlas · v2 · 2026 · build 06-27.t</div>
     </header>
     <div id="statrail">
       <div class="s"><div class="v" id="sr-cov">—</div><div class="l">Coverage</div></div>

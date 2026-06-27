@@ -27,6 +27,22 @@ const LAYERS = [
 ];
 const LAYER_BY_KEY = Object.fromEntries(LAYERS.map((l) => [l.key, l]));
 
+// The Atrocity layer is the curated/beta genocide dataset — NOT built from
+// established indices like the rest. It lives behind the same passcode gate as
+// the Genocide map layer, so keep this panel consistent: no atrocity ties are
+// shown until that layer is unlocked. Unlock state is written to sessionStorage
+// by layer-panel.js (key 'atlas-beta-unlocked').
+const GENOCIDE_LAYER_ID = 'entanglement-genocide';
+function genocideUnlocked() {
+  try {
+    return JSON.parse(sessionStorage.getItem('atlas-beta-unlocked') || '[]').includes(GENOCIDE_LAYER_ID);
+  } catch (e) { return false; }
+}
+// LAYERS minus the gated Atrocity layer while it is still locked
+function shownLayers() {
+  return genocideUnlocked() ? LAYERS : LAYERS.filter((l) => l.key !== 'genocide');
+}
+
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (m) => (
   { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[m]
 ));
@@ -171,6 +187,7 @@ function relCommodities(iso) {
 }
 
 function relGenocide(iso) {
+  if (!genocideUnlocked()) return [];   // gated: curated atrocity data stays hidden until unlocked
   const out = [];
   for (const a of DATA.genocide) {
     const self = a.self || a.from === a.to;
@@ -337,6 +354,32 @@ function injectStyles() {
   #rel-panel .rp-span i.open-start {
     background: linear-gradient(90deg, transparent, #b0723a 60%);
   }
+
+  /* ── PHONE: true full-screen panel ── */
+  @media (max-width: 640px) {
+    #rel-panel {
+      width: 100%; max-width: 100%; left: 0; right: 0;
+      height: 100dvh;
+    }
+    /* full-screen: always sits in its own slot, no -392px dock offset */
+    #rel-panel.open, #rel-panel.open.standalone {
+      transform: translateX(0); z-index: 92;
+    }
+    #rel-panel .rp-scroll {
+      padding:
+        calc(env(safe-area-inset-top) + 24px)
+        calc(env(safe-area-inset-right) + 18px)
+        calc(env(safe-area-inset-bottom) + 36px)
+        calc(env(safe-area-inset-left) + 18px);
+      -webkit-overflow-scrolling: touch;
+      overscroll-behavior: contain;
+    }
+    #rel-panel .rp-close {
+      top: calc(env(safe-area-inset-top) + 12px);
+      right: calc(env(safe-area-inset-right) + 12px);
+      width: 44px; height: 44px; font-size: 18px;
+    }
+  }
   `;
   const tag = document.createElement('style');
   tag.id = 'rel-panel-css';
@@ -469,7 +512,7 @@ function sankeyBlock(top, iso) {
 function diagramBlock(rel, iso) {
   const top = topPartners(rel);
   if (top.length < 2) return '';
-  const legend = LAYERS.map((l) =>
+  const legend = shownLayers().map((l) =>
     `<span class="rp-lg-item"><i style="background:${l.color}"></i>${l.label}</span>`).join('');
   return `<div class="rp-diagram">
     <div class="rp-view rp-view-flow">${sankeyBlock(top, iso)}</div>
@@ -564,12 +607,12 @@ function render(iso) {
   const total = LAYERS.reduce((n, l) => n + rel[l.key].filter((r) => !r.self).length, 0)
     + rel.genocide.filter((r) => r.self).length;
   const { html: olHtml, overlapPartners } = overlapBlock(rel);
-  const secs = LAYERS.map((l) => sectionBlock(l, rel[l.key], overlapPartners)).join('');
+  const secs = shownLayers().map((l) => sectionBlock(l, rel[l.key], overlapPartners)).join('');
   const scroll = PANEL.querySelector('.rp-scroll');
   scroll.innerHTML = `
     <div class="rp-eyebrow">Entanglements</div>
     <h2 class="rp-name">${esc(nm(iso))}</h2>
-    <p class="rp-sub">${total} cross-border ${total === 1 ? 'tie' : 'ties'} across colonial, refugee, economic, commodity & atrocity layers</p>
+    <p class="rp-sub">${total} cross-border ${total === 1 ? 'tie' : 'ties'} across colonial, refugee, economic, commodity${genocideUnlocked() ? ' & atrocity' : ''} layers</p>
     ${diagramBlock(rel, iso)}
     ${olHtml}
     ${secs}`;

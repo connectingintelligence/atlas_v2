@@ -34,6 +34,27 @@ const META_CLUSTER_LABELS = {
 // stable display order
 const META_ORDER = Object.keys(META_CLUSTER_LABELS);
 
+// Resilience factors (rf_* in cti_scores.json). Labels mirror DOCS.resilience
+// names; kept here so the order is stable even if docs reorder. Coverage varies
+// widely per factor — absent factors are MISSING keys (shown as "no data", not 0).
+const RF_LABELS = {
+  rf_democracy: 'Democracy & Governance',
+  rf_governance_quality: 'Governance Quality',
+  rf_press_freedom: 'Press Freedom',
+  rf_peace: 'Peace',
+  rf_social_trust: 'Social Trust',
+  rf_belonging: 'Belonging',
+  rf_wellbeing: 'Wellbeing',
+  rf_health: 'Health',
+  rf_transitional_justice: 'Transitional Justice',
+  rf_gender_equality: 'Gender Equality',
+  rf_womens_education: "Women's Education",
+  rf_womens_power: "Women's Political Power",
+  rf_biodiversity: 'Biodiversity',
+  rf_environmental_quality: 'Environmental Quality',
+};
+const RF_ORDER = Object.keys(RF_LABELS);
+
 // "How it's built / decisions" notes per meta-cluster, shown in the ⓘ panel.
 // Generic note for the rest; the death-toll families get their specific choices.
 const CLUSTER_NOTES = {
@@ -61,6 +82,22 @@ function clusterInfoHtml(slug) {
     ${md.description ? `<div class="cd-ci-desc">${esc(md.description)}</div>` : ''}
     <ul class="cd-ci-list">${members}</ul>
     <div class="cd-ci-note">${note}</div>
+  </div>`;
+}
+
+// ⓘ panel for one resilience factor: name, description, sources — from
+// indicator-docs.json's `resilience` block (keyed by rf_* slug).
+function resilienceInfoHtml(slug) {
+  const rd = DOCS && DOCS.resilience && DOCS.resilience[slug];
+  if (!rd) return '';
+  const srcs = (rd.sources || []).filter((s) => s && (s.url || s.id)).map((s) =>
+    s.url ? `<a href="${esc(s.url)}" target="_blank" rel="noopener">${esc(s.id || 'source')}</a>` : esc(s.id)).join(' · ');
+  const inv = rd.invert ? `<div class="cd-ci-note">Higher raw values mean less resilience; the score is inverted so 100 = most resilient.</div>` : '';
+  return `<div class="cd-ci">
+    ${rd.description ? `<div class="cd-ci-desc">${esc(rd.description)}</div>` : ''}
+    ${srcs ? `<div class="cd-ci-src">${srcs}</div>` : ''}
+    ${inv}
+    <div class="cd-ci-note">Normalised to 0–100 (100 = strongest). Absent data is shown as “no data”, never 0.</div>
   </div>`;
 }
 
@@ -134,7 +171,9 @@ function injectStyles() {
   #country-drawer .cd-section-title {
     font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: .16em;
     text-transform: uppercase; color: var(--ink-faint, #8a8278); margin-bottom: 14px; font-weight: 500;
+    display: flex; align-items: baseline; justify-content: space-between; gap: 10px;
   }
+  #country-drawer .cd-section-aside { color: var(--ink-dim); letter-spacing: .04em; }
 
   /* cluster bars */
   #country-drawer .cd-bar-row { margin-bottom: 11px; }
@@ -150,6 +189,8 @@ function injectStyles() {
     overflow: hidden;
   }
   #country-drawer .cd-bar-fill { height: 100%; border-radius: 3px; background: var(--accent); transition: width .5s ease; }
+  /* resilience bars read GREEN (mirrors the resilience surface ramp on the map) */
+  #country-drawer .cd-bar-fill.res { background: #5f8f5a; }
   /* absent meta-cluster: faded row, empty track, "no data" instead of a number */
   #country-drawer .cd-bar-absent { opacity: .6; }
   #country-drawer .cd-bar-absent .cd-bar-label { color: var(--ink-faint); }
@@ -237,6 +278,28 @@ function injectStyles() {
     text-transform: uppercase; margin-left: 4px; color: var(--ink-faint);
   }
   #country-drawer .cd-nodata { font-size: 12.5px; color: var(--ink-dim); font-style: italic; }
+
+  /* ── PHONE: true full-screen drawer ── */
+  @media (max-width: 640px) {
+    #country-drawer {
+      width: 100%; max-width: 100%; left: 0; right: 0;
+      height: 100dvh;
+    }
+    #country-drawer .cd-scroll {
+      padding:
+        calc(env(safe-area-inset-top) + 26px)
+        calc(env(safe-area-inset-right) + 20px)
+        calc(env(safe-area-inset-bottom) + 40px)
+        calc(env(safe-area-inset-left) + 20px);
+      -webkit-overflow-scrolling: touch;
+      overscroll-behavior: contain;
+    }
+    #country-drawer .cd-close {
+      top: calc(env(safe-area-inset-top) + 12px);
+      right: calc(env(safe-area-inset-right) + 12px);
+      width: 44px; height: 44px; font-size: 20px;
+    }
+  }
   `;
   const style = document.createElement('style');
   style.id = 'country-drawer-css';
@@ -326,6 +389,54 @@ function renderClusters(cti) {
         (≈1946–2022) — earlier events (the Holocaust, the Armenian genocide, colonial
         atrocities) and the most recent ones are not captured here. The curated historical
         record will be shown in a beta layer, coming in a future version.</div>
+    </div>`;
+}
+
+// Resilience Factors — the drill-down of the single "Resilience" score, shown
+// in every Country Reading regardless of the active surface. Mirrors
+// renderClusters: green bars, per-factor ⓘ, and an explicit "no data" row
+// (never a painted 0) for factors absent in this country.
+function renderResilience(cti) {
+  if (!cti) return '';
+  const infoBtn = (slug) => `<button class="cd-ci-btn" data-ci="${esc(slug)}" type="button"
+    title="About this factor" aria-label="About ${esc(RF_LABELS[slug])}">i</button>`;
+  const infoPanel = (slug) => `<div class="cd-ci-panel" data-ci-panel="${esc(slug)}" hidden>${resilienceInfoHtml(slug)}</div>`;
+  const rows = [];
+  for (const slug of RF_ORDER) {
+    const v = cti[slug];
+    if (typeof v !== 'number') {
+      rows.push(`
+        <div class="cd-bar-row cd-bar-absent">
+          <div class="cd-bar-head">
+            <span class="cd-bar-label">${esc(RF_LABELS[slug])}</span>
+            <span class="cd-bar-right"><span class="cd-bar-num cd-bar-nodata">no data</span>${infoBtn(slug)}</span>
+          </div>
+          <div class="cd-bar-track"></div>
+          ${infoPanel(slug)}
+        </div>`);
+      continue;
+    }
+    const pct = Math.max(0, Math.min(100, v));
+    rows.push(`
+      <div class="cd-bar-row">
+        <div class="cd-bar-head">
+          <span class="cd-bar-label">${esc(RF_LABELS[slug])}</span>
+          <span class="cd-bar-right"><span class="cd-bar-num">${v < 0.5 ? '&lt;1' : Math.round(v)}</span>${infoBtn(slug)}</span>
+        </div>
+        <div class="cd-bar-track"><div class="cd-bar-fill res" style="width:${pct}%"></div></div>
+        ${infoPanel(slug)}
+      </div>`);
+  }
+  if (!rows.length) return '';
+  const score = (cti.r != null && !isNaN(cti.r))
+    ? `<span class="cd-section-aside">Resilience ${cti.r.toFixed(1)} / 100</span>` : '';
+  return `
+    <div class="cd-section">
+      <div class="cd-section-title">Resilience Factors${score}</div>
+      ${rows.join('')}
+      <div class="cd-cluster-note">Resilience indicates where the collective capacity for
+        mitigation, awareness, and integration may exist. Coverage varies by factor; blanks
+        mean the indicator is not available for this territory, not that it scores zero.</div>
     </div>`;
 }
 
@@ -458,6 +569,7 @@ function renderDrawer(iso3) {
   const sections = [
     renderScore(cti),
     renderClusters(cti),
+    renderResilience(cti),
     renderPopulation(rec),
     renderGeography(rec),
     renderReligion(rec),

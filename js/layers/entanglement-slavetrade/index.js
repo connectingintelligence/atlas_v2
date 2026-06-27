@@ -55,6 +55,7 @@ export default {
   // commercial trade between the European powers that profited from it.
   label: 'Slave Voyages',
   group: 'entanglement',
+  temporal: { min: 1514, max: 1866 },   // SlaveVoyages documented voyage span
   methodologyPath: 'methodology/slavetrade.md',
   dataPath: 'data/slavetrade.json',
   controls: [

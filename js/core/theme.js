@@ -31,14 +31,18 @@ const RAMPS = {
     [0.75, [202, 96, 50]],
     [1.00, [162, 50, 32]],
   ],
-  // Dampening factor: a strong grey→green arc. Low resilience reads as a
-  // near-neutral grey (no green tint), climbing through to a lush, saturated
-  // green at the high end so "more resilience = more alive" is unmistakable.
+  // Resilience: lush green (high) → dark grey/near-black (low). The low end is
+  // deliberately dark so a fragile country (e.g. Afghanistan ~23) reads as
+  // near-black, not a pale tint — "less resilience = darker, more depleted",
+  // climbing through to a saturated, alive green at the top. (Absent countries
+  // stay the light bone --country-absent, so dark-low ≠ no-data.)
   resilience: [
-    [0.00, [124, 126, 123]],
-    [0.30, [113, 150, 123]],
-    [0.60, [89, 181, 116]],
-    [1.00, [66, 191, 98]],
+    [0.00, [24, 26, 24]],     // near-black — lowest resilience
+    [0.22, [52, 58, 52]],     // dark grey (≈ Afghanistan 23)
+    [0.42, [86, 104, 88]],    // dark grey-green
+    [0.62, [104, 152, 112]],  // muted green
+    [0.82, [82, 184, 110]],   // green
+    [1.00, [64, 198, 96]],    // lush green — highest resilience
   ],
 };
 

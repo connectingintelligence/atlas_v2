@@ -65,6 +65,24 @@ function injectStyles() {
   }
   #csearch .cs-empty { padding: 7px 10px; font-size: 12px; font-style: italic; color: var(--ink-faint); }
   @media (max-width: 900px) { #csearch { width: 210px; } }
+
+  /* ── phones: tuck under the topbar in the left column and collapse to a 40px
+     search button (clears the top-right country-chip). Focusing it (tap or "/")
+     expands the field; blurring on select collapses it again. ── */
+  @media (max-width: 640px) {
+    #csearch { top: calc(env(safe-area-inset-top) + 88px); left: 12px; width: auto; }
+    #csearch input {
+      width: 40px; height: 40px; padding: 0; text-align: center; font-size: 16px;
+      transition: width .25s ease, padding .25s ease;
+    }
+    #csearch input:focus {
+      width: min(72vw, 280px); text-align: left; padding: 0 36px 0 14px;
+    }
+    #csearch .cs-icon { right: 50%; transform: translate(50%, -50%); }
+    #csearch input:focus + .cs-icon { right: 14px; transform: translateY(-50%); }
+    #csearch .cs-list { width: min(72vw, 280px); max-height: 50vh; }
+    #csearch .cs-item { padding: 10px 12px; }
+  }
   `;
   const tag = document.createElement('style');
   tag.id = 'country-search-css';

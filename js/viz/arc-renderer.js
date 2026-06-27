@@ -147,13 +147,25 @@ export function createArcRenderer(group, ctx, options = {}) {
 
     const segments = [];
     let current = [];
+    let prevX = null;
     const N = samples.length - 1;
     for (let i = 0; i < samples.length; i++) {
       const coord = samples[i];
       const p = projection(coord);
       if (!p || !isFinite(p[0]) || !isFinite(p[1]) || !visible(coord)) {
-        if (current.length > 1) segments.push(current); current = []; continue;
+        if (current.length > 1) segments.push(current); current = []; prevX = null; continue;
       }
+      // FLAT MODE antimeridian split: an equirectangular map maps x linearly to
+      // longitude, so a great circle crossing ±180° produces consecutive samples
+      // on opposite map edges. Without a break, the renderer joins them with a
+      // straight L that streaks across the whole map (e.g. France→Wallis,
+      // USA→Guam, NZ→Tokelau/Niue/Cook Is.). When the projected x jumps more than
+      // half the map width (cx), end the current sub-segment so each piece runs to
+      // its own edge. Globe mode is unaffected (the horizon cull already breaks it).
+      if (alpha > 0.5 && prevX != null && Math.abs(p[0] - prevX) > cx) {
+        if (current.length > 1) segments.push(current); current = [];
+      }
+      prevX = p[0];
       const t = i / N;
       const bump = Math.sin(t * Math.PI);
       const dx = p[0] - cx, dy = p[1] - cy;

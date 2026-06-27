@@ -38,6 +38,7 @@ const UI_MODULES = [
   ['./ui/feedback.js', 'initFeedback'],                // prototype disclaimer + feedback modal
   ['./ui/anachronism-note.js', 'initAnachronismNote'], // "today's borders ≠ 1500" caption + fade
   ['./ui/country-chip.js', 'initCountryChip'],         // click = pin + chip; panels open on demand
+  ['./ui/mobile-shell.js', 'initMobileShell'],         // phone bottom-sheet + Layers FAB (≤640px)
 ];
 
 async function main() {
