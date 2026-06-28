@@ -201,83 +201,71 @@ export function createGlobe(container, opts = {}) {
     render();
   }
 
-  // ── drag rotate + pinch zoom ──
-  // touch-action:none keeps the browser from hijacking touches for page
-  // pan / pinch-to-zoom / rubber-band scroll while the user works the globe.
-  // It is inert on desktop (mouse) input.
+  // ── drag-rotate + pinch-zoom (Pointer Events) ──
+  // Pointer Events unify mouse / touch / pen and ALWAYS carry clientX/clientY —
+  // unlike TouchEvents, where clientX is undefined (d3.pointer returned NaN, so
+  // the globe never moved on a phone). touch-action:none lets us own the gesture
+  // instead of the browser scrolling/zooming the page; setPointerCapture keeps
+  // move events flowing even when the finger/cursor leaves the globe. Desktop
+  // mouse runs through the very same path (a single pointer) → unchanged feel.
   svg.style('touch-action', 'none');
 
-  let dragStart = null, rotStart = null;
-  let pinchStart = null;   // { dist, zoom } while a 2-finger pinch is active
+  const pointers = new Map();   // pointerId -> [x,y] relative to the svg
+  let rotStart = null, dragOrigin = null;
+  let pinchStart = null;        // { dist, zoom } while 2 pointers are down
+  const node = svg.node();
 
-  function pinchDistance(touches) {
-    const dx = touches[0].clientX - touches[1].clientX;
-    const dy = touches[0].clientY - touches[1].clientY;
-    return Math.hypot(dx, dy);
+  function ptXY(ev) {
+    const r = node.getBoundingClientRect();
+    return [ev.clientX - r.left, ev.clientY - r.top];
   }
-
-  // Pointer position relative to the svg. CRITICAL: d3.pointer() reads
-  // event.clientX, which is UNDEFINED on a TouchEvent (coords live in
-  // event.touches[*]) — so it returns [NaN,NaN] and the globe never moves on a
-  // phone. Extract the first touch ourselves for touch input; keep d3.pointer
-  // for mouse so desktop behaviour is byte-for-byte unchanged.
-  function dragXY(ev) {
-    const t = (ev.touches && ev.touches[0]) || (ev.changedTouches && ev.changedTouches[0]);
-    if (t) {
-      const r = svg.node().getBoundingClientRect();
-      return [t.clientX - r.left, t.clientY - r.top];
-    }
-    return d3.pointer(ev, svg.node());
+  function pinchDist() {
+    const p = [...pointers.values()];
+    return Math.hypot(p[0][0] - p[1][0], p[0][1] - p[1][1]);
   }
-
-  svg.on('mousedown.drag touchstart.drag', (ev) => {
-    // Two fingers down → begin a pinch-zoom gesture and cancel any single-finger
-    // drag-rotate that may have started, so the globe doesn't rotate mid-pinch.
-    if (ev.touches && ev.touches.length === 2) {
-      ev.preventDefault();
-      pinchStart = { dist: pinchDistance(ev.touches), zoom: state.zoom };
-      dragStart = null;
-      if (state.autoRotate) {
-        state.autoRotate = false;
-        if (opts.onAutoRotateChange) opts.onAutoRotateChange(false);
-      }
-      return;
-    }
-    state.autoRotate = false;
-    if (opts.onAutoRotateChange) opts.onAutoRotateChange(false);
-    dragStart = dragXY(ev);
+  function seatDrag() {                 // (re)anchor a single-finger rotate
+    dragOrigin = [...pointers.values()][0];
     rotStart = state.rotation.slice();
-  }, { passive: false });
+    pinchStart = null;
+  }
 
-  d3.select(window).on('mousemove.drag touchmove.drag', (ev) => {
-    // Pinch takes priority; never rotate while 2+ fingers are down.
-    if (ev.touches && ev.touches.length >= 2) {
-      if (pinchStart) {
-        ev.preventDefault();
-        const ratio = pinchDistance(ev.touches) / pinchStart.dist;
-        setZoom(pinchStart.zoom * ratio, false);
-      }
+  svg.on('pointerdown.drag', (ev) => {
+    if (ev.pointerType === 'mouse' && ev.button !== 0) return;   // primary button only
+    pointers.set(ev.pointerId, ptXY(ev));
+    try { node.setPointerCapture(ev.pointerId); } catch (_) {}
+    if (state.autoRotate) { state.autoRotate = false; opts.onAutoRotateChange?.(false); }
+    if (pointers.size === 2) { pinchStart = { dist: pinchDist(), zoom: state.zoom }; dragOrigin = null; }
+    else seatDrag();
+  });
+
+  svg.on('pointermove.drag', (ev) => {
+    if (!pointers.has(ev.pointerId)) return;
+    pointers.set(ev.pointerId, ptXY(ev));
+    ev.preventDefault();
+    if (pointers.size >= 2 && pinchStart) {                       // 2 fingers → zoom
+      setZoom(pinchStart.zoom * (pinchDist() / pinchStart.dist), false);
       return;
     }
-    if (!dragStart) return;
-    // a finger is dragging the globe → stop the page from scrolling/bouncing
-    if (ev.touches) ev.preventDefault();
-    const p = dragXY(ev);
-    const k = 0.33 * (1 - state.proj * 0.4);
-    state.rotation = [
-      rotStart[0] + (p[0] - dragStart[0]) * k,
-      Math.max(-85, Math.min(85, rotStart[1] - (p[1] - dragStart[1]) * k)),
-      rotStart[2],
-    ];
-    render();
+    if (pointers.size === 1 && dragOrigin) {                      // 1 finger → rotate/pan
+      const p = [...pointers.values()][0];
+      const k = 0.33 * (1 - state.proj * 0.4);
+      state.rotation = [
+        rotStart[0] + (p[0] - dragOrigin[0]) * k,
+        Math.max(-85, Math.min(85, rotStart[1] - (p[1] - dragOrigin[1]) * k)),
+        rotStart[2],
+      ];
+      render();
+    }
   }, { passive: false });
 
-  d3.select(window).on('mouseup.drag touchend.drag', (ev) => {
-    // End the pinch once fewer than 2 fingers remain; end the drag once all
-    // fingers are up (mouseup has no .touches, so both clear).
-    if (!ev.touches || ev.touches.length < 2) pinchStart = null;
-    if (!ev.touches || ev.touches.length === 0) dragStart = null;
-  });
+  function endPointer(ev) {
+    pointers.delete(ev.pointerId);
+    try { node.releasePointerCapture(ev.pointerId); } catch (_) {}
+    if (pointers.size < 2) pinchStart = null;
+    if (pointers.size === 1) seatDrag();   // pinch → single-drag handoff: re-anchor
+    else if (pointers.size === 0) dragOrigin = null;
+  }
+  svg.on('pointerup.drag pointercancel.drag', endPointer);
 
   // ── wheel zoom ──
   svg.on('wheel.zoom', (ev) => {

@@ -8,6 +8,19 @@ running).
 
 ---
 
+## 2026-06-28 — touch via Pointer Events + legends off on mobile (build 06-28.b)
+
+- **Touch drag rewritten on Pointer Events.** The 06-28.a TouchEvent fix still
+  didn't move the globe on a real iPhone (iOS Safari TouchEvent quirks). Replaced
+  the whole drag+pinch block in `projection.js` with Pointer Events — the same
+  mechanism the layers-sheet drag already uses successfully on-device. One pointer
+  rotates (3D) / pans (2D), two pinch-zoom, with setPointerCapture so the gesture
+  survives leaving the globe. Mouse runs the identical path → desktop unchanged.
+  Verified: synthetic pointer-drag rotates the globe (rot [20,-15] → [47.7,-28.9]).
+- **Both legends hidden on phones** (client: "as clean as possible"): the CFCT
+  surface ramp and the per-layer arc legend are `display:none` ≤640px. Desktop
+  keeps them. `legend.js`.
+
 ## 2026-06-28 — mobile handling fixes from real-device testing (build 06-28.a)
 
 First real phone test surfaced several issues; all fixed (desktop untouched):

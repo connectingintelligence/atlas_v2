@@ -48,21 +48,11 @@ function injectStyles() {
   /* ── phones: dock to the LEFT column (clear of the top-right country-chip)
      and make the key collapsible (default collapsed) so it stays out of the
      way. Tap the title to expand/collapse. ── */
+  /* Phones: hide BOTH legends for a clean map (client: "as clean as possible").
+     The surface ramp is inline-styled display:block, so !important is required.
+     Colour meaning lives in the methodology / per-layer info on mobile. */
   @media (max-width:640px){
-    #atlas-legend { right:auto; bottom:auto; left:12px; width:auto; max-width:74vw;
-      top: calc(env(safe-area-inset-top) + 156px); }
-    #atlas-legend .lg-title { display:flex; align-items:center; justify-content:space-between;
-      cursor:pointer; margin-bottom:0; min-height:40px; padding:6px 0; }
-    #atlas-legend .lg-title::after { content:'\\25BE'; font-size:11px; margin-left:12px;
-      transition:transform .2s ease; }
-    #atlas-legend.expanded .lg-title { margin-bottom:9px; }
-    #atlas-legend.expanded .lg-title::after { transform:rotate(180deg); }
-    #atlas-legend .lg-row { display:none; }
-    #atlas-legend.expanded .lg-row { display:block; }
-    #atlas-legend.expanded { max-height:46vh; overflow-y:auto; }
-    /* surface ramp (inline-styled) tucks into the same left column, above the legend */
-    #surface-legend { left:12px !important; bottom:auto !important; width:150px !important;
-      top: calc(env(safe-area-inset-top) + 108px) !important; }
+    #surface-legend, #atlas-legend { display:none !important; }
   }`;
   const s = document.createElement('style');
   s.id = 'atlas-legend-css'; s.textContent = css;
