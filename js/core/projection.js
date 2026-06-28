@@ -216,6 +216,20 @@ export function createGlobe(container, opts = {}) {
     return Math.hypot(dx, dy);
   }
 
+  // Pointer position relative to the svg. CRITICAL: d3.pointer() reads
+  // event.clientX, which is UNDEFINED on a TouchEvent (coords live in
+  // event.touches[*]) — so it returns [NaN,NaN] and the globe never moves on a
+  // phone. Extract the first touch ourselves for touch input; keep d3.pointer
+  // for mouse so desktop behaviour is byte-for-byte unchanged.
+  function dragXY(ev) {
+    const t = (ev.touches && ev.touches[0]) || (ev.changedTouches && ev.changedTouches[0]);
+    if (t) {
+      const r = svg.node().getBoundingClientRect();
+      return [t.clientX - r.left, t.clientY - r.top];
+    }
+    return d3.pointer(ev, svg.node());
+  }
+
   svg.on('mousedown.drag touchstart.drag', (ev) => {
     // Two fingers down → begin a pinch-zoom gesture and cancel any single-finger
     // drag-rotate that may have started, so the globe doesn't rotate mid-pinch.
@@ -231,7 +245,7 @@ export function createGlobe(container, opts = {}) {
     }
     state.autoRotate = false;
     if (opts.onAutoRotateChange) opts.onAutoRotateChange(false);
-    dragStart = d3.pointer(ev, svg.node());
+    dragStart = dragXY(ev);
     rotStart = state.rotation.slice();
   }, { passive: false });
 
@@ -246,7 +260,9 @@ export function createGlobe(container, opts = {}) {
       return;
     }
     if (!dragStart) return;
-    const p = d3.pointer(ev, svg.node());
+    // a finger is dragging the globe → stop the page from scrolling/bouncing
+    if (ev.touches) ev.preventDefault();
+    const p = dragXY(ev);
     const k = 0.33 * (1 - state.proj * 0.4);
     state.rotation = [
       rotStart[0] + (p[0] - dragStart[0]) * k,

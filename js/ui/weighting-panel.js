@@ -84,10 +84,9 @@ function injectStyles() {
 
   /* ── Phone pass (Agent F): full-screen sheet + tappable controls ≤640px ── */
   @media (max-width:640px){
-    /* top-left tool stack (shared 44px rhythm, below the one-line brand title):
-       Weighting 44 · Search 88 · Feedback 132 · surface ramp 176 · legend 220 */
-    #wt-toggle { left:calc(env(safe-area-inset-left) + 12px);
-      top:calc(env(safe-area-inset-top) + 44px); bottom:auto; padding:11px 15px; }
+    /* Weighting is hidden on phones (client: overkill for mobile). The panel is
+       desktop-only; the toggle simply isn't shown ≤640px. Desktop unchanged. */
+    #wt-toggle { display:none; }
     #wt-panel { left:0; right:0; top:0; bottom:auto; width:100%; max-width:100%;
       height:100dvh; max-height:100dvh; border:none; border-radius:0;
       transform:translateY(100%); }

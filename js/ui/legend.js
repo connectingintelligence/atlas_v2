@@ -50,7 +50,7 @@ function injectStyles() {
      way. Tap the title to expand/collapse. ── */
   @media (max-width:640px){
     #atlas-legend { right:auto; bottom:auto; left:12px; width:auto; max-width:74vw;
-      top: calc(env(safe-area-inset-top) + 220px); }
+      top: calc(env(safe-area-inset-top) + 156px); }
     #atlas-legend .lg-title { display:flex; align-items:center; justify-content:space-between;
       cursor:pointer; margin-bottom:0; min-height:40px; padding:6px 0; }
     #atlas-legend .lg-title::after { content:'\\25BE'; font-size:11px; margin-left:12px;
@@ -62,7 +62,7 @@ function injectStyles() {
     #atlas-legend.expanded { max-height:46vh; overflow-y:auto; }
     /* surface ramp (inline-styled) tucks into the same left column, above the legend */
     #surface-legend { left:12px !important; bottom:auto !important; width:150px !important;
-      top: calc(env(safe-area-inset-top) + 176px) !important; }
+      top: calc(env(safe-area-inset-top) + 108px) !important; }
   }`;
   const s = document.createElement('style');
   s.id = 'atlas-legend-css'; s.textContent = css;

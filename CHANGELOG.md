@@ -8,6 +8,29 @@ running).
 
 ---
 
+## 2026-06-28 — mobile handling fixes from real-device testing (build 06-28.a)
+
+First real phone test surfaced several issues; all fixed (desktop untouched):
+
+- **Globe/map would not move on touch (the big one).** Drag used `d3.pointer()`,
+  which reads `event.clientX` — `undefined` on a `TouchEvent` (coords live in
+  `event.touches[*]`) → it returned `[NaN,NaN]` and the globe never rotated/panned
+  on a phone. Added `dragXY()` in `projection.js` that extracts the first touch's
+  coordinates for touch input (keeps `d3.pointer` for mouse → desktop byte-for-byte
+  unchanged). Single-finger drag now rotates (3D) / pans (2D); pinch still zooms.
+  It now feels like a normal map on the phone.
+- **Layers sheet barely visible / felt dead.** Over the globe the 0.86-alpha
+  panel-bg + blur washed it out. The sheet is now a **solid** `var(--bg)` surface
+  (no backdrop blur) on phones, with `touch-action:pan-y` + `overscroll-behavior:
+  contain` for clean scrolling, ≥44px tap targets on every row, bigger checkboxes,
+  selects and info/solo buttons, and more FAB clearance.
+- **Weighting button removed on mobile** (client: overkill for phones) — desktop
+  keeps it. `weighting-panel.js`.
+- **Feedback pill removed on mobile** (client request) — desktop keeps it.
+- **Search tidied:** collapsed state is now a clean magnifier circle (the long
+  placeholder no longer shows as a cut-off "Searc"); the top-left stack tightened
+  up now that Weighting + Feedback are gone (brand · search · surface key).
+
 ## 2026-06-27 — remove the colour-theme switcher (build 06-27.t)
 
 Client request: the bone/forest/dusk colour dots (bottom-left) are removed from

@@ -72,8 +72,8 @@ function injectStyles() {
      under the search) and make the modal full-width friendly with safe-area
      padding + >=40px controls. ── */
   @media (max-width:640px){
-    #fb-pill { display:block; top:calc(env(safe-area-inset-top) + 132px); left:12px;
-      right:auto; bottom:auto; min-height:40px; padding:9px 14px; font-size:10px; }
+    /* Feedback pill hidden on phones (client request). Desktop unchanged. */
+    #fb-pill { display:none; }
     #fb-modal { width:94vw; max-width:94vw; max-height:86dvh;
       padding:18px 16px calc(16px + env(safe-area-inset-bottom));
       padding-top:calc(18px + env(safe-area-inset-top)); }

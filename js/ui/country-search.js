@@ -70,11 +70,15 @@ function injectStyles() {
      search button (clears the top-right country-chip). Focusing it (tap or "/")
      expands the field; blurring on select collapses it again. ── */
   @media (max-width: 640px) {
-    #csearch { top: calc(env(safe-area-inset-top) + 88px); left: 12px; width: auto; }
+    /* directly under the brand title (Weighting + Feedback are hidden on phones) */
+    #csearch { top: calc(env(safe-area-inset-top) + 52px); left: 12px; width: auto; }
     #csearch input {
-      width: 40px; height: 40px; padding: 0; text-align: center; font-size: 16px;
+      width: 44px; height: 44px; padding: 0; text-align: center; font-size: 16px;
       transition: width .25s ease, padding .25s ease;
     }
+    /* collapsed = clean magnifier circle only (hide the long placeholder so it
+       doesn't read as a cut-off "Searc") */
+    #csearch input:not(:focus)::placeholder { color: transparent; }
     #csearch input:focus {
       width: min(72vw, 280px); text-align: left; padding: 0 36px 0 14px;
     }

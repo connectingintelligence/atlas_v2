@@ -107,18 +107,34 @@ function injectStyles() {
   @media (max-width:640px) {
     #layers { position:fixed; left:0; right:0; bottom:0; top:auto; transform:translateY(101%);
       width:100%; max-width:100%; max-height:82dvh; overflow-y:auto;
-      border-radius:16px 16px 0 0; padding:22px 18px;
+      border-radius:16px 16px 0 0; padding:26px 16px;
       /* clear the floating Layers FAB (48px tall at bottom+16) so it never
          overlaps the last row / Beta-layer footer when scrolled to the end */
-      padding-bottom:calc(env(safe-area-inset-bottom) + 76px);
+      padding-bottom:calc(env(safe-area-inset-bottom) + 84px);
+      /* SOLID + no blur on the phone: over the globe the 0.86 panel-bg + blur
+         washed the sheet out so it "barely showed". A solid surface reads. */
+      background:var(--bg); backdrop-filter:none; -webkit-backdrop-filter:none;
+      /* allow native vertical scrolling inside the sheet (the globe sets
+         touch-action:none on itself; the sheet must opt back into pan-y) */
+      touch-action:pan-y; overscroll-behavior:contain;
       transition:transform .34s cubic-bezier(.22,.8,.25,1); z-index:71;
       box-shadow:0 -8px 30px var(--shadow); -webkit-overflow-scrolling:touch; }
     #layers.sheet-open { transform:translateY(0); }
     /* grip/handle — small centred drag bar in the top grip zone */
-    #layers::before { content:""; position:absolute; top:9px; left:50%; transform:translateX(-50%);
-      width:36px; height:4px; border-radius:2px; background:var(--rule); }
-    /* a touch more breathing room so the grip doesn't crowd the first heading */
+    #layers::before { content:""; position:absolute; top:10px; left:50%; transform:translateX(-50%);
+      width:40px; height:5px; border-radius:3px; background:var(--rule); }
     #layers h3:first-child { margin-top:6px; }
+
+    /* bigger, finger-friendly rows + controls (≥44px tap targets) */
+    #layers .layer-toggle { min-height:44px; font-size:15px; gap:12px; }
+    #layers .layer-toggle input { width:22px; height:22px; flex:none; }
+    #layers .layer-row { padding:6px 8px; }
+    #layers .layer-btn { width:34px; height:34px; }
+    #layers .layer-actions { gap:8px; }
+    #layers h3 { font-size:11px; }
+    /* per-layer controls (sliders/selects) comfortable to tap */
+    #layers .ctrl select, #layers .ctrl input[type="range"] { min-height:38px; font-size:15px; }
+    #layers .layer-info, #layers .beta-go { min-height:38px; }
   }
   `;
   const style = document.createElement('style');
