@@ -86,22 +86,12 @@ function injectStyles() {
   /* when the time axis is off, fade the slider + bounds so it reads as inactive */
   #time-scrubber.alltime .ts-range, #time-scrubber.alltime .ts-bounds { opacity: .35; }
 
-  /* ── phones: lift above the bottom layout contract (FAB / controls / theme
-     all sit at bottom+16px); keep centred and inside the viewport ── */
+  /* ── phones: hide the whole time axis (client: looks messy on mobile). The
+     scrubber + its "Borders: era … · Commodities …" contracts caption are both
+     removed; layers keep their default year, so the map is unaffected. Desktop
+     keeps the full timeline. !important + .show beat the base show rules. ── */
   @media (max-width:640px){
-    #time-scrubber {
-      bottom: calc(env(safe-area-inset-bottom) + 80px);
-      width: auto; max-width: 94vw; gap: 10px; padding: 7px 14px 7px 7px;
-    }
-    #time-scrubber .ts-bounds { display: none; } /* save width on narrow screens */
-    #time-scrubber .ts-play { width: 40px; height: 40px; font-size: 15px; } /* tap target */
-    #time-scrubber .ts-readout { font-size: 19px; min-width: 46px; }
-    #time-scrubber .ts-alltime { padding: 9px 12px; }
-    /* contracts badge rides just above the lifted scrubber (inline style → !important) */
-    #time-contracts {
-      bottom: calc(env(safe-area-inset-bottom) + 136px) !important;
-      max-width: 94vw !important;
-    }
+    #time-scrubber, #time-scrubber.show, #time-contracts { display: none !important; }
   }`;
   const s = document.createElement('style');
   s.id = 'atlas-time-scrubber-css';

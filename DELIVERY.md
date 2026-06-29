@@ -3,7 +3,7 @@
 **A Map of the Conditions** — Conditions for Collective Trauma (CFCT) Atlas, v2.
 Prepared for The Pocket Project by Connecting Intelligence LLC.
 
-This folder is the complete, self-contained atlas. Build stamp **06-29.e**.
+This folder is the complete, self-contained atlas. Build stamp **06-29.f**.
 
 ---
 

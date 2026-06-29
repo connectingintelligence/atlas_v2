@@ -8,6 +8,14 @@ running).
 
 ---
 
+## 2026-06-29 — hide the time axis on mobile (build 06-29.f)
+
+Client: the time scrubber looked messy on phones. Both `#time-scrubber` (play /
+slider / year / ALL) and `#time-contracts` (the "Borders: era ≤ … · Commodities …"
+caption) are now `display:none` ≤640px. Layers keep their default year, so the map
+is unaffected; desktop keeps the full timeline. `time-scrubber.js`. QA 24/24
+(temporal-contracts check runs at desktop width → still passes).
+
 ## 2026-06-29 — THE root cause: scrim stacking context (build 06-29.e)
 
 The bug that survived 06-28.b → 06-29.d ("open the menu and it goes grey, nothing
