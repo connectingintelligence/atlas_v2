@@ -16,6 +16,11 @@ function injectStyles() {
   /* FAB + scrim are mobile-only; hidden entirely above the phone breakpoint. */
   #layers-fab, #sheet-scrim { display:none; }
 
+  /* …and kept hidden during the intro: intro-flow toggles body.intro-active,
+     and these (appended to <body>, not #chrome) would otherwise float over the
+     intro at z-72. Higher specificity than the media-query rules → always wins. */
+  body.intro-active #layers-fab, body.intro-active #sheet-scrim { display:none; }
+
   @media (max-width:640px) {
     /* dimming scrim behind the sheet */
     #sheet-scrim { display:block; position:fixed; inset:0; z-index:69;

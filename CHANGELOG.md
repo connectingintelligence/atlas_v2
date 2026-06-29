@@ -8,6 +8,27 @@ running).
 
 ---
 
+## 2026-06-29 — iOS touch + intro-FAB fixes (build 06-29.a)
+
+Real-iPhone test of 06-28.b surfaced two blockers; both fixed (desktop untouched):
+
+- **Globe wouldn't move on touch AND the layers sheet was completely untappable.**
+  Root cause: `projection.js` called `node.setPointerCapture()` on the **SVG**.
+  iOS WebKit mishandles pointer-capture on an `<svg>` — the capture leaks and the
+  SVG swallows every subsequent pointer event, so neither the globe drag nor the
+  sheet rows ever got their taps. Removed `setPointerCapture`/`releasePointerCapture`
+  entirely; `pointermove`/`pointerup`/`pointercancel` now bind to `window` (the
+  finger can leave the globe without capture), strictly keyed by `pointerId` in the
+  existing `pointers` Map. Any pointer that didn't start on the globe falls straight
+  through and we only `preventDefault()` our own — so sheet taps are never blocked.
+  Headless Chrome tolerated the capture, so this could only be reasoned from iOS
+  behaviour.
+- **Layers FAB floated over the intro.** The FAB + scrim (appended to `<body>`,
+  z-72) showed via the ≤640px media query regardless of intro state. Gated them on
+  `body.intro-active` (the class intro-flow already toggles) in `mobile-shell.js`,
+  with specificity high enough to beat the media-query rules → FAB appears only once
+  you enter the atlas.
+
 ## 2026-06-28 — touch via Pointer Events + legends off on mobile (build 06-28.b)
 
 - **Touch drag rewritten on Pointer Events.** The 06-28.a TouchEvent fix still

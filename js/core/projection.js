@@ -205,9 +205,16 @@ export function createGlobe(container, opts = {}) {
   // Pointer Events unify mouse / touch / pen and ALWAYS carry clientX/clientY —
   // unlike TouchEvents, where clientX is undefined (d3.pointer returned NaN, so
   // the globe never moved on a phone). touch-action:none lets us own the gesture
-  // instead of the browser scrolling/zooming the page; setPointerCapture keeps
-  // move events flowing even when the finger/cursor leaves the globe. Desktop
-  // mouse runs through the very same path (a single pointer) → unchanged feel.
+  // instead of the browser scrolling/zooming the page. Desktop mouse runs through
+  // the very same path (a single pointer) → unchanged feel.
+  //
+  // iOS NOTE: we deliberately do NOT use setPointerCapture on the SVG. iOS
+  // WebKit mishandles pointer-capture on an <svg>: the capture leaks and the SVG
+  // then swallows EVERY subsequent pointer event, so nothing else on the page
+  // (e.g. the mobile layers sheet) can be tapped. Instead we listen for
+  // move/up/cancel on window, key strictly by pointerId in the `pointers` Map,
+  // and ignore any pointer that did not start on the globe — so sheet taps
+  // (a different pointerId, never added to the Map) are never blocked.
   svg.style('touch-action', 'none');
 
   const pointers = new Map();   // pointerId -> [x,y] relative to the svg
@@ -229,16 +236,22 @@ export function createGlobe(container, opts = {}) {
     pinchStart = null;
   }
 
+  // pointerdown stays on the svg — only a press that lands on the globe starts a
+  // drag (and gets added to the Map). Move/up/cancel live on window below.
   svg.on('pointerdown.drag', (ev) => {
     if (ev.pointerType === 'mouse' && ev.button !== 0) return;   // primary button only
     pointers.set(ev.pointerId, ptXY(ev));
-    try { node.setPointerCapture(ev.pointerId); } catch (_) {}
     if (state.autoRotate) { state.autoRotate = false; opts.onAutoRotateChange?.(false); }
     if (pointers.size === 2) { pinchStart = { dist: pinchDist(), zoom: state.zoom }; dragOrigin = null; }
     else seatDrag();
   });
 
-  svg.on('pointermove.drag', (ev) => {
+  // window (not svg): keeps move/up flowing when the finger leaves the globe,
+  // WITHOUT setPointerCapture. The `pointers.has` guard means pointers that
+  // never started on the globe fall straight through — so taps elsewhere on the
+  // page (the layers sheet) are untouched, and we only preventDefault our own.
+  const win = d3.select(window);
+  win.on('pointermove.globedrag', (ev) => {
     if (!pointers.has(ev.pointerId)) return;
     pointers.set(ev.pointerId, ptXY(ev));
     ev.preventDefault();
@@ -259,13 +272,13 @@ export function createGlobe(container, opts = {}) {
   }, { passive: false });
 
   function endPointer(ev) {
+    if (!pointers.has(ev.pointerId)) return;   // not one of ours → ignore
     pointers.delete(ev.pointerId);
-    try { node.releasePointerCapture(ev.pointerId); } catch (_) {}
     if (pointers.size < 2) pinchStart = null;
     if (pointers.size === 1) seatDrag();   // pinch → single-drag handoff: re-anchor
     else if (pointers.size === 0) dragOrigin = null;
   }
-  svg.on('pointerup.drag pointercancel.drag', endPointer);
+  win.on('pointerup.globedrag pointercancel.globedrag', endPointer);
 
   // ── wheel zoom ──
   svg.on('wheel.zoom', (ev) => {
