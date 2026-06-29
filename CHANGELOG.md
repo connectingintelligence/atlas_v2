@@ -8,6 +8,28 @@ running).
 
 ---
 
+## 2026-06-29 — mobile layers sheet was unreachable (build 06-29.c)
+
+On-device the open Layers sheet looked right but **nothing inside it could be
+tapped** — "it stays in the background." Diagnosed with a headless hit-test
+harness: with `.sheet-open` applied, `#layers` computed `transform:translateY(101%)`
+— i.e. the OPEN sheet was still parked off-screen at its CLOSED position, and the
+full-screen scrim (`pointer-events:auto`) sat on top, so `elementFromPoint` over
+every row returned `#sheet-scrim`, not the row. The `.sheet-open` class rule
+(`translateY(0)`) was not taking effect on the live element.
+
+- **Fix:** `mobile-shell.js` `openSheet()` now sets the open position with an
+  **inline** `transform:translateY(0)` (inline always wins the cascade; there is no
+  `!important` on the panel rules). `closeSheet()` clears the inline transform so
+  the CSS-driven closed position (phone `translateY(101%)`, desktop rail
+  `translateY(-50%)`) is restored — important so a phone→desktop resize while open
+  doesn't strand the inline value on the desktop rail. The `.34s` transition still
+  animates the slide. Nothing else writes `#layers`'s transform, so it can't be
+  clobbered.
+
+Carries the 06-29.b globe fixes (touch-action on `#globe-wrap`, `dragStart`→
+`pointers.size===0`). QA 24/24.
+
 ## 2026-06-29 — the REAL iOS drag fix + auto-rotate crash (build 06-29.b)
 
 06-29.a fixed the sheet (removed SVG pointer-capture) but the globe still didn't

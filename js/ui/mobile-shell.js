@@ -76,10 +76,17 @@ export function initMobileShell({ registry, globe } = {}) {
 
   let open = false;
 
+  // The open/closed position is driven by an INLINE transform, not just the
+  // .sheet-open CSS class. On-device the class rule (#layers.sheet-open{
+  // translateY(0)}) was being out-cascaded by the base #layers{translateY(101%)}
+  // rule, so the "open" sheet stayed parked off-screen at 101% and the scrim sat
+  // on top of it — every tap hit the scrim and nothing in the sheet was
+  // reachable. An inline style beats any stylesheet rule, so we set the position
+  // directly here. The .34s CSS transition on transform still animates it.
   function openSheet() {
     open = true;
     layers.style.transition = '';       // restore CSS-driven snap
-    layers.style.transform = '';        // clear any drag offset → class controls
+    layers.style.transform = 'translateY(0)';   // inline → always wins the cascade
     layers.classList.add('sheet-open');
     scrim.classList.add('show');
     fab.setAttribute('aria-expanded', 'true');
@@ -88,6 +95,11 @@ export function initMobileShell({ registry, globe } = {}) {
   function closeSheet() {
     open = false;
     layers.style.transition = '';
+    // Clear the inline transform: the CLOSED position is correct from CSS on
+    // both phone (#layers base → translateY(101%)) and desktop (the rail →
+    // translateY(-50%)). Only the OPEN state needs the inline override above, so
+    // clearing here keeps the desktop rail intact if the viewport is resized
+    // from phone→desktop while the sheet is open (onMqChange calls closeSheet).
     layers.style.transform = '';
     layers.classList.remove('sheet-open');
     scrim.classList.remove('show');
