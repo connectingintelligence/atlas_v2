@@ -8,6 +8,15 @@ running).
 
 ---
 
+## 2026-06-29 — hide PER-LAYER time controls on mobile too (build 06-29.g)
+
+06-29.f hid the global scrubber, but the time axis still reappeared inside the
+panel: every time-aware layer renders its own `year` slider + `timeMode` "Time"
+select when expanded. Now hidden on phones too. controlRow tags each control with a
+`ctrl-<id>` class; CSS hides `#layers .ctrl-year, #layers .ctrl-timeMode` ≤640px.
+Layers fall back to their defaults (timeMode "all" / latest year) → clean snapshot,
+no time UI anywhere on mobile. Desktop keeps every control. QA 24/24.
+
 ## 2026-06-29 — hide the time axis on mobile (build 06-29.f)
 
 Client: the time scrubber looked messy on phones. Both `#time-scrubber` (play /

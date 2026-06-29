@@ -135,6 +135,11 @@ function injectStyles() {
     /* per-layer controls (sliders/selects) comfortable to tap */
     #layers .ctrl select, #layers .ctrl input[type="range"] { min-height:38px; font-size:15px; }
     #layers .layer-info, #layers .beta-go { min-height:38px; }
+    /* hide the per-layer TIME controls on phones (client: the time axis looks messy
+       on mobile). The global scrubber is already hidden; layers fall back to their
+       defaults (timeMode "all" / latest year), giving a clean snapshot. Desktop
+       keeps full time control. */
+    #layers .ctrl-year, #layers .ctrl-timeMode { display:none; }
   }
   `;
   const style = document.createElement('style');
@@ -172,20 +177,22 @@ export function initLayerPanel(registry, mountEl) {
 
   function controlRow(layer, c) {
     const val = layer.controlValues[c.id];
+    // ctrl-<id> class lets responsive CSS target a specific control (e.g. hide the
+    // time controls — ctrl-year / ctrl-timeMode — on phones).
     if (c.type === 'select') {
       const opts = (c.options || []).map((o) =>
         `<option value="${esc(o.value)}" ${o.value === val ? 'selected' : ''}>${esc(o.label)}</option>`).join('');
-      return `<label class="ctrl"><span>${esc(c.label)}</span>
+      return `<label class="ctrl ctrl-${esc(c.id)}"><span>${esc(c.label)}</span>
         <select data-ctrl="${esc(c.id)}">${opts}</select></label>`;
     }
     if (c.type === 'toggle') {
-      return `<label class="ctrl ctrl-toggle"><span>
+      return `<label class="ctrl ctrl-toggle ctrl-${esc(c.id)}"><span>
         <input type="checkbox" data-ctrl="${esc(c.id)}" ${val ? 'checked' : ''}>
         ${esc(c.label)}</span></label>`;
     }
     // slider (default)
     const min = c.min ?? 0, max = c.max ?? 1, step = c.step ?? 0.05;
-    return `<label class="ctrl"><span>${esc(c.label)} <em class="cval">${esc(val)}</em></span>
+    return `<label class="ctrl ctrl-${esc(c.id)}"><span>${esc(c.label)} <em class="cval">${esc(val)}</em></span>
       <input type="range" data-ctrl="${esc(c.id)}" min="${min}" max="${max}" step="${step}" value="${val}"></label>`;
   }
 
