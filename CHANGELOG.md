@@ -8,6 +8,29 @@ running).
 
 ---
 
+## 2026-06-29 — mobile PEEK SHEET + trimmed globe controls (build 06-29.d)
+
+Replaced the floating "Layers" FAB on phones with a **peek sheet** (Apple/Google
+Maps pattern), chosen from the mobile-UX mockup:
+
+- **Always-visible bottom strip** shows the active surface (e.g. "Surface · CFCT
+  composite") and badges for whichever entanglements are on (or "tap to add
+  entanglements"). Tap or drag it up to expand the full layer list; tap the grip /
+  scrim / Esc, or drag down, to collapse. `mobile-shell.js`.
+- **Implementation:** `#layers` is wrapped in a new `#layers-sheet` element with the
+  peek header as a *sibling* (not a child) — necessary because layer-panel.js
+  re-renders `#layers` via `innerHTML`, which would wipe a child header. The summary
+  stays in sync via `registry.onChange`. On tablet/desktop the wrapper is
+  `display:contents`, so the original rail is byte-for-byte unchanged and #chrome's
+  opacity still gates it during the intro. The wrapper carries the slide transform,
+  so the 06-29.c cascade gotcha can't recur.
+- **Globe controls trimmed on phones:** only the **2D/3D toggle** (#gc-proj) remains
+  — the zoom +/- buttons (pinch replaces them) and the play/pause rotation button are
+  hidden, and the controls are lifted clear of the peek strip. Per client: keep it as
+  clean as possible.
+
+QA 24/24. Desktop untouched.
+
 ## 2026-06-29 — mobile layers sheet was unreachable (build 06-29.c)
 
 On-device the open Layers sheet looked right but **nothing inside it could be
