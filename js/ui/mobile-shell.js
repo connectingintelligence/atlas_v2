@@ -110,10 +110,18 @@ export function initMobileShell({ registry, globe } = {}) {
   sheet.appendChild(layers);   // move the existing list into the wrapper
 
   // ── scrim ──
+  // CRITICAL: the scrim MUST live inside #chrome (alongside #layers-sheet), NOT on
+  // <body>. #chrome is position:fixed → it forms its own stacking context, so the
+  // sheet's z-index (72) is only meaningful *within* #chrome. A body-level scrim at
+  // z-69 paints above the entire #chrome unit (z-index:auto) and therefore above the
+  // sheet — making the whole open menu grey and untappable. Putting the scrim in the
+  // SAME stacking context as the sheet lets z-69 (scrim) sit correctly below z-72
+  // (sheet). Verified with a hit-test: body-level → scrim covers rows; in #chrome →
+  // rows are the topmost element.
   const scrim = document.createElement('div');
   scrim.id = 'sheet-scrim';
   scrim.setAttribute('aria-hidden', 'true');
-  document.body.appendChild(scrim);
+  sheet.parentNode.insertBefore(scrim, sheet);   // into #chrome, before the sheet
 
   // ── expand / collapse ──
   let open = false;

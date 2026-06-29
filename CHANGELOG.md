@@ -8,6 +8,25 @@ running).
 
 ---
 
+## 2026-06-29 — THE root cause: scrim stacking context (build 06-29.e)
+
+The bug that survived 06-28.b → 06-29.d ("open the menu and it goes grey, nothing
+is tappable"). Found with a deterministic hit-test: the dimming **scrim was a
+`<body>` child at z-index 69, but the sheet lives inside `#chrome`, which is
+`position:fixed`**. A fixed element forms its OWN stacking context, so the sheet's
+z-index (72) only ranks it *within* #chrome; the whole #chrome unit (z-index:auto)
+paints **below** the body-level scrim. So the scrim always covered the sheet — every
+earlier "fix" (pointer-capture, touch-action, the translateY cascade, the peek
+rewrite) was downstream of this and couldn't help.
+
+- **Fix (one line):** append the scrim INSIDE #chrome (next to #layers-sheet) instead
+  of `<body>`. Now scrim (z-69) and sheet (z-72) share one stacking context, so the
+  sheet correctly sits above the scrim. `mobile-shell.js`. Proven with a standalone
+  hit-test: body-level scrim → topmost over a row = scrim; scrim in #chrome → topmost
+  = the row.
+
+QA 24/24. Desktop untouched.
+
 ## 2026-06-29 — mobile PEEK SHEET + trimmed globe controls (build 06-29.d)
 
 Replaced the floating "Layers" FAB on phones with a **peek sheet** (Apple/Google
