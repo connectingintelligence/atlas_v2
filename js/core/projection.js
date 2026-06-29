@@ -352,7 +352,7 @@ export function createGlobe(container, opts = {}) {
   let rafId = null, lastT = performance.now();
   function tick(now) {
     const dt = now - lastT; lastT = now;
-    if (state.autoRotate && !dragStart && state.proj < 0.04) {
+    if (state.autoRotate && pointers.size === 0 && state.proj < 0.04) {
       state.rotation[0] = (state.rotation[0] + state.rotateSpeed * (dt / 16.67)) % 360;
       render();
     }

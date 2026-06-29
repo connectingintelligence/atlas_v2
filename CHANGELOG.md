@@ -8,6 +8,27 @@ running).
 
 ---
 
+## 2026-06-29 — the REAL iOS drag fix + auto-rotate crash (build 06-29.b)
+
+06-29.a fixed the sheet (removed SVG pointer-capture) but the globe still didn't
+move on a real iPhone. Two further root causes found and fixed:
+
+- **`touch-action:none` was on the `<svg>` — iOS WebKit ignores it there.** With
+  touch-action unenforced, iOS interpreted the one-finger drag as a page-pan and
+  fired `pointercancel` on the globe pointer, so the `pointermove` stream that
+  rotates the globe never arrived (headless Chrome honours touch-action on SVG, so
+  it could never reproduce). Moved `touch-action:none` onto the HTML element
+  `#globe-wrap` in `index.html` (kept on the svg too for non-iOS engines). This is
+  the actual touch-drag fix.
+- **`projection.js` auto-rotate loop threw a ReferenceError every load.** The
+  Pointer-Events rewrite renamed the drag state but `tick()` still read the old,
+  now-undeclared `dragStart` (`!dragStart`). In a strict-mode ES module that throws
+  → the rAF loop died after one frame (no auto-spin) and logged an error on every
+  browser. Replaced with `pointers.size === 0` ("not currently dragging").
+
+The 06-29.a window-listener rewrite + FAB intro-gate are retained and verified
+correct (the Layers sheet opens and its rows are tappable on-device).
+
 ## 2026-06-29 — iOS touch + intro-FAB fixes (build 06-29.a)
 
 Real-iPhone test of 06-28.b surfaced two blockers; both fixed (desktop untouched):

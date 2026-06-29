@@ -65,6 +65,12 @@
   /* ─── STAGE / GLOBE ────────────────────────────────────────── */
   #stage { position:fixed; inset:0; }
   #globe-wrap { position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+    /* touch-action MUST live on this HTML element, not the inner <svg>: iOS
+       WebKit ignores touch-action on SVG, so the one-finger drag was treated as
+       a page-pan and the globe never rotated on iPhone. On an HTML block element
+       iOS honours it → we own the gesture and pointermove drives the rotation.
+       (Kept on the svg too as belt-and-suspenders for non-iOS engines.) */
+    touch-action:none;
     /* own stacking context: keeps the map's internal layers (ocean, countries,
        arcs, the z-index:6 particle canvas) contained BELOW the UI chrome. Without
        this, once .globe-in clears opacity/transform the canvas's z:6 escapes to
@@ -391,7 +397,7 @@
       <div class="brand-title">Conditions for Collective Trauma</div>
       <!-- build stamp: bump when shipping UI fixes so a stale tab is instantly
            recognisable (user-reported bugs kept tracing back to old tabs) -->
-      <div class="brand-sub">Atlas · v2 · 2026 · build 06-29.a</div>
+      <div class="brand-sub">Atlas · v2 · 2026 · build 06-29.b</div>
     </header>
     <div id="statrail">
       <div class="s"><div class="v" id="sr-cov">—</div><div class="l">Coverage</div></div>
